@@ -1,0 +1,259 @@
+{{--
+  Teams page.
+--}}
+@extends('layouts.app')
+
+@php
+  $teams = skduo_get_teams_with_players();
+  $meeskonnadHeroImage = function_exists('skduo_get_meeskonnad_hero_image') ? skduo_get_meeskonnad_hero_image() : '';
+  $accentClasses = [
+    'green-deep' => 'bg-green-deep text-paper',
+    'green-mid' => 'bg-green-mid text-paper',
+    'lime' => 'bg-lime text-ink',
+  ];
+@endphp
+
+@section('content')
+  <section class="bg-paper border-b border-ink/10">
+    <div class="grid min-h-[auto] grid-cols-1 lg:min-h-[520px] lg:grid-cols-[1.15fr_0.85fr]">
+      <div class="flex flex-col justify-center px-4 py-14 sm:px-6 md:px-12 md:py-20">
+        <span class="inline-flex items-center gap-2 text-green-deep text-xs font-extrabold uppercase tracking-widest mb-5">
+          <span class="w-8 h-0.5 bg-green-deep"></span>
+          Meeskonnad
+        </span>
+
+        <h1 class="max-w-4xl font-display text-5xl leading-[0.88] tracking-wide sm:text-6xl md:text-8xl">
+          TARTU PLATSIL ON RUUMI IGALE ROLLILE.
+        </h1>
+
+        <p class="mt-7 max-w-2xl text-base md:text-lg leading-relaxed text-ink/65">
+          SK DUO võistkonnad ühendavad esindustaseme, ülikoolivõrkpalli ja noortesüsteemi üheks selgeks arenguteeks.
+        </p>
+      </div>
+
+      <div class="relative flex flex-col justify-between overflow-hidden bg-hero-dark px-4 py-10 text-paper sm:px-6 md:px-12 md:py-12">
+        @if($meeskonnadHeroImage)
+          <div class="absolute inset-0 z-0 opacity-70">
+            <img src="{{ esc_url($meeskonnadHeroImage) }}" alt="" class="h-full w-full object-cover grayscale contrast-110 saturate-75" loading="lazy">
+          </div>
+          <div class="absolute inset-0 z-[1] bg-[var(--skduo-hero-bg)]/82"></div>
+        @endif
+        <div class="absolute -right-24 -top-24 z-[2] h-72 w-72 rounded-full bg-green-mint/10 animate-float"></div>
+
+        <div class="relative z-10 mt-12">
+          <div class="text-xs font-extrabold uppercase tracking-widest text-green-mint mb-3">Klubi loogika</div>
+          <p class="text-2xl md:text-3xl font-display leading-none tracking-wide">
+            Üks klubi. Mitu teekonda. Sama Tartu energia.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="px-4 py-12 sm:px-6 md:px-12 md:py-20">
+    @if(empty($teams))
+      <div class="border border-ink/10 bg-cream px-6 py-10 md:px-10">
+        <div class="max-w-3xl">
+          <span class="inline-flex items-center gap-2 text-green-deep text-xs font-extrabold uppercase tracking-widest mb-3">
+            <span class="w-7 h-0.5 bg-green-deep"></span>
+            Sisu puudub
+          </span>
+          <h2 class="mb-4 font-display text-4xl leading-none tracking-wide sm:text-5xl">Lisa esimene meeskond wp-administ.</h2>
+          <p class="text-sm leading-relaxed text-ink/65">
+            Loo esmalt kirje menüüst Meeskonnad. Seejärel lisa mängijad menüüst Mängijad ja vali iga mängija juures õige meeskond.
+          </p>
+        </div>
+      </div>
+    @else
+      <div class="space-y-16">
+      @foreach($teams as $team)
+        <section data-reveal data-team-roster>
+          <div class="mb-6 grid gap-5 border-t border-ink/10 pt-7 lg:grid-cols-[0.75fr_1.25fr] lg:items-end">
+            <div>
+              <div class="mb-3 flex flex-wrap items-center gap-2">
+                @if($team->level)
+                  <span class="{{ $accentClasses[$team->accent] ?? $accentClasses['green-deep'] }} px-3 py-1.5 text-[0.62rem] font-extrabold uppercase tracking-widest">
+                    {{ $team->level }}
+                  </span>
+                @endif
+                @if($team->league)
+                  <span class="border border-ink/15 px-3 py-1.5 text-[0.62rem] font-extrabold uppercase tracking-widest text-ink/60">
+                    {{ $team->league }}
+                  </span>
+                @endif
+                @if(! empty($team->seasons))
+                  @php
+                    // $team->seasons is sorted latest-first — default the picker to it instead of "Kõik hooajad".
+                    $defaultSeason = $team->seasons[0];
+                  @endphp
+                  <div class="skduo-season-picker relative" data-season-picker>
+                    <button
+                      type="button"
+                      class="skduo-season-picker__trigger"
+                      aria-expanded="false"
+                      aria-label="{{ esc_attr($team->name . ' hooaja filter') }}"
+                      data-season-trigger
+                    >
+                      <span data-season-label>{{ $defaultSeason['name'] }}</span>
+                      <span class="skduo-season-picker__icon" aria-hidden="true"></span>
+                    </button>
+                    <div class="skduo-season-picker__menu" data-season-menu>
+                      <button type="button" class="skduo-season-picker__option" data-season-option data-season-value="all">
+                        Kõik hooajad
+                      </button>
+                      @foreach($team->seasons as $season)
+                        <button type="button" class="skduo-season-picker__option{{ $season['slug'] === $defaultSeason['slug'] ? ' is-active' : '' }}" data-season-option data-season-value="{{ esc_attr($season['slug']) }}">
+                          {{ $season['name'] }}
+                        </button>
+                      @endforeach
+                    </div>
+                  </div>
+                @endif
+              </div>
+              <h2 class="font-display text-4xl leading-none tracking-wide sm:text-5xl md:text-6xl">{{ $team->name }}</h2>
+            </div>
+
+            @if($team->summary)
+              <div class="lg:max-w-3xl">
+                <p class="text-sm md:text-base leading-relaxed text-ink/65">{{ $team->summary }}</p>
+              </div>
+            @endif
+          </div>
+
+          @if(empty($team->players) && empty($team->staff ?? []))
+            <div class="border border-dashed border-ink/20 p-6 text-sm font-bold uppercase tracking-widest text-ink/62">
+              Mängijaid pole veel lisatud.
+            </div>
+          @else
+            @if(! empty($team->players))
+              <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                @foreach($team->players as $player)
+                  <x-player-card :player="$player" />
+                @endforeach
+              </div>
+            @else
+              <div class="border border-dashed border-ink/20 p-6 text-sm font-bold uppercase tracking-widest text-ink/62">
+                Mängijaid pole veel lisatud.
+              </div>
+            @endif
+
+            <div class="skduo-season-empty mt-4 hidden border border-dashed border-ink/20 p-6 text-sm font-bold uppercase tracking-widest text-ink/62">
+              Selle hooaja mängijaid pole veel lisatud.
+            </div>
+
+            @if(! empty($team->staff))
+              <div class="mt-10">
+                <div class="mb-4 flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-ink/62">
+                  <span class="h-0.5 w-6 bg-ink/20"></span>
+                  Treenerid ja personal
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  @foreach($team->staff as $member)
+                    <x-player-card :player="$member" :show-stats="false" />
+                  @endforeach
+                </div>
+              </div>
+            @endif
+          @endif
+        </section>
+      @endforeach
+      </div>
+    @endif
+  </section>
+
+  <script>
+    (function () {
+      document.querySelectorAll('[data-team-roster]').forEach(function (section) {
+        var picker = section.querySelector('[data-season-picker]');
+        var trigger = section.querySelector('[data-season-trigger]');
+        var label = section.querySelector('[data-season-label]');
+        var options = Array.prototype.slice.call(section.querySelectorAll('[data-season-option]'));
+        var cards = Array.prototype.slice.call(section.querySelectorAll('[data-player-card]'));
+        var empty = section.querySelector('.skduo-season-empty');
+
+        if (!picker || !trigger || !options.length || !cards.length) {
+          return;
+        }
+
+        // Defaults to whichever option the template marked .is-active (the latest season), falling back to "all".
+        var initialOption = options.filter(function (option) {
+          return option.classList.contains('is-active');
+        })[0];
+        var selectedSeason = initialOption ? (initialOption.getAttribute('data-season-value') || 'all') : 'all';
+
+        function updateRoster() {
+          var visibleCount = 0;
+
+          cards.forEach(function (card) {
+            var seasons = (card.getAttribute('data-seasons') || '').split(/\s+/).filter(Boolean);
+            var isVisible = selectedSeason === 'all' || seasons.indexOf(selectedSeason) !== -1;
+            var image = card.querySelector('[data-player-image]');
+
+            card.classList.toggle('hidden', !isVisible);
+            if (image) {
+              var seasonImages = {};
+              try {
+                seasonImages = JSON.parse(card.getAttribute('data-season-images') || '{}');
+              } catch (error) {
+                seasonImages = {};
+              }
+              var directSeasonImage = selectedSeason !== 'all'
+                ? card.getAttribute('data-season-image-' + selectedSeason)
+                : '';
+              var nextImage = directSeasonImage || seasonImages[selectedSeason] || card.getAttribute('data-default-image') || image.src;
+
+              if (image.src !== nextImage) {
+                image.src = nextImage;
+              }
+            }
+            if (isVisible) {
+              visibleCount += 1;
+            }
+          });
+
+          if (empty) {
+            empty.classList.toggle('hidden', visibleCount !== 0);
+          }
+        }
+
+        function closePicker() {
+          picker.classList.remove('is-open');
+          trigger.setAttribute('aria-expanded', 'false');
+        }
+
+        trigger.addEventListener('click', function () {
+          var isOpen = picker.classList.toggle('is-open');
+          trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        });
+
+        options.forEach(function (option) {
+          option.addEventListener('click', function () {
+            selectedSeason = option.getAttribute('data-season-value') || 'all';
+            if (label) {
+              label.textContent = option.textContent.trim();
+            }
+            options.forEach(function (item) {
+              item.classList.toggle('is-active', item === option);
+            });
+            closePicker();
+            updateRoster();
+          });
+        });
+
+        document.addEventListener('click', function (event) {
+          if (!picker.contains(event.target)) {
+            closePicker();
+          }
+        });
+
+        document.addEventListener('keydown', function (event) {
+          if (event.key === 'Escape') {
+            closePicker();
+          }
+        });
+
+        updateRoster();
+      });
+    })();
+  </script>
+@endsection

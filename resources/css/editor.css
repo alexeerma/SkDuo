@@ -1,0 +1,11 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-green-deep: #1F5A52;
+  --color-green-mint: #6FC8B5;
+  --color-ink: #0A1518;
+  --color-paper: #F8F5EE;
+}
+
+/* Editor-specific styles go here.
+   Anything in this file only loads inside the WP block editor (Gutenberg). */

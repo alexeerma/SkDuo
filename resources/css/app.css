@@ -1,0 +1,1415 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors */
+  --color-green-deep: #1F5A52;
+  --color-green-mid:  #2A7A6F;
+  --color-green-mint: #6FC8B5;
+  --color-green-pale: #C9E8DF;
+  --color-ink:        #0A1518;
+  --color-ink-2:      #15282C;
+  --color-paper:      #F8F5EE;
+  --color-cream:      #EDE7D7;
+  --color-lime:       #D4E84F;
+  --color-coral:      #FF6B5B;
+
+  /* Fonts */
+  --font-display: "Bebas Neue", sans-serif;
+  --font-serif:   "Instrument Serif", serif;
+  --font-sans:    "Inter", system-ui, sans-serif;
+
+  /* Custom font sizes */
+  --text-hero: 7rem;
+  --text-hero--line-height: 0.88;
+
+  /* Custom animations */
+  --animate-float: float 12s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(40px, 20px) scale(1.08); }
+  }
+}
+
+/* Custom utilities for gradient backgrounds */
+@utility bg-bigbank-gradient {
+  background-image: var(--skduo-bigbank-gradient, linear-gradient(135deg, #6FC8B5 0%, #1F5A52 100%));
+}
+
+@utility bg-hero-dark {
+  background-image: var(--skduo-hero-gradient, linear-gradient(135deg, #1F5A52 0%, #15282C 100%));
+}
+
+/* Big display headlines use the same font as the rest of the site (Bebas Neue),
+   matching h1/h2/h3 elsewhere. Was Instrument Serif; kept as its own utility
+   name so nothing needs renaming if the class list ever needs to diverge again. */
+@utility font-serif-display {
+  font-family: var(--font-display);
+}
+
+/* Glow shadow under primary green-mint CTA buttons. */
+@utility shadow-cta-glow {
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--color-green-mint) 28%, transparent);
+}
+
+/* Fallback background for image-less cards; tune via --fallback-pos and --fallback-opacity. */
+@utility bg-card-fallback {
+  --fallback-pos: 50% 50%;
+  --fallback-opacity: 24%;
+  background-image:
+    radial-gradient(circle at var(--fallback-pos), color-mix(in srgb, var(--color-green-mint) var(--fallback-opacity), transparent), transparent 33%),
+    linear-gradient(135deg, var(--skduo-card-dark), var(--skduo-hero-bg));
+}
+
+/* Base layer */
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+}
+
+/* Hide the native page scrollbar — replaced by .skduo-scroll-progress under the header.
+   overflow-x is also clamped here as a safety net against stray absolutely-positioned
+   elements (e.g. nav dropdowns) pushing the page wider than the viewport. */
+html {
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  width: 0;
+}
+
+/* Wrapped in @layer base so utility classes (e.g. font-serif-display, font-sans)
+   can still override this default — unlayered rules always beat layered ones
+   regardless of specificity, which previously made this win over every utility. */
+@layer base {
+  h1, h2, h3 {
+    @apply font-display tracking-wide;
+  }
+}
+
+body:has(.skduo-mobile-menu[open]) {
+  overflow: hidden;
+}
+
+/* Fallback for browsers without :has() support (e.g. Firefox < 121) — toggled in animations.js. */
+body.is-menu-open {
+  overflow: hidden;
+}
+
+.skduo-mobile-menu__panel {
+  height: 100vh;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.skduo-site-logo {
+  flex: 0 0 auto;
+  height: clamp(170px, 13vw, 230px);
+  object-fit: contain;
+  width: auto;
+}
+
+.skduo-header-logo {
+  height: clamp(62px, 4.8vw, 82px);
+  width: clamp(220px, 15vw, 320px);
+}
+
+.skduo-announcement-marquee {
+  display: flex;
+  gap: 3rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.skduo-announcement-track {
+  animation: skduo-announcement-scroll 32s linear infinite;
+  display: flex;
+  flex: 0 0 auto;
+  gap: 3rem;
+  min-width: max-content;
+  will-change: transform;
+}
+
+.skduo-announcement-marquee:hover .skduo-announcement-track {
+  animation-play-state: paused;
+}
+
+.skduo-announcement-link {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 45%, transparent);
+  text-underline-offset: 0.22em;
+  transition: border-color 180ms ease, color 180ms ease;
+}
+
+.skduo-announcement-link:hover,
+.skduo-announcement-link:focus-visible {
+  border-color: currentColor;
+  color: var(--color-green-deep);
+}
+
+.skduo-season-picker {
+  min-width: 10.5rem;
+  z-index: 20;
+}
+
+.skduo-season-picker__trigger {
+  align-items: center;
+  background: var(--color-ink);
+  border: 1px solid var(--color-ink);
+  color: var(--color-paper);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.62rem;
+  font-weight: 800;
+  gap: 0.8rem;
+  justify-content: space-between;
+  letter-spacing: 0.14em;
+  min-height: 2.75rem;
+  padding: 0.45rem 0.72rem;
+  text-transform: uppercase;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+  width: 100%;
+}
+
+.skduo-season-picker__trigger:hover,
+.skduo-season-picker__trigger:focus-visible,
+.skduo-season-picker.is-open .skduo-season-picker__trigger {
+  background: var(--color-green-deep);
+  border-color: var(--color-green-deep);
+}
+
+.skduo-season-picker__trigger:focus-visible {
+  outline: 2px solid var(--color-green-mint);
+  outline-offset: 2px;
+}
+
+.skduo-season-picker__icon {
+  border-bottom: 2px solid currentColor;
+  border-right: 2px solid currentColor;
+  flex: 0 0 auto;
+  height: 0.45rem;
+  transform: translateY(-0.12rem) rotate(45deg);
+  transition: transform 180ms ease;
+  width: 0.45rem;
+}
+
+.skduo-season-picker.is-open .skduo-season-picker__icon {
+  transform: translateY(0.1rem) rotate(225deg);
+}
+
+.skduo-season-picker__menu {
+  background: var(--color-paper);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+  box-shadow: 0 18px 45px color-mix(in srgb, var(--color-ink) 16%, transparent);
+  display: grid;
+  gap: 0.25rem;
+  left: 0;
+  min-width: 100%;
+  opacity: 0;
+  padding: 0.35rem;
+  pointer-events: none;
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  transform: translateY(-0.35rem);
+  transition: opacity 160ms ease, transform 160ms ease;
+  width: max-content;
+  z-index: 30;
+}
+
+.skduo-season-picker.is-open .skduo-season-picker__menu {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.skduo-season-picker__option {
+  background: transparent;
+  border: 0;
+  color: color-mix(in srgb, var(--color-ink) 68%, transparent);
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  min-height: 2.75rem;
+  min-width: 9.5rem;
+  padding: 0.75rem 0.85rem;
+  text-align: left;
+  text-transform: uppercase;
+  transition: background 160ms ease, color 160ms ease;
+  white-space: nowrap;
+}
+
+.skduo-season-picker__option:hover,
+.skduo-season-picker__option:focus-visible {
+  background: var(--color-cream);
+  color: var(--color-ink);
+}
+
+.skduo-season-picker__option:focus-visible {
+  outline: 2px solid var(--color-green-deep);
+  outline-offset: -2px;
+}
+
+.skduo-season-picker__option.is-active {
+  background: var(--color-green-deep);
+  color: var(--color-paper);
+}
+
+@keyframes skduo-announcement-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-100% - 3rem));
+  }
+}
+
+.skduo-scroll-cue {
+  align-items: center;
+  color: color-mix(in srgb, var(--color-paper) 58%, transparent);
+  gap: 0.75rem;
+  justify-content: center;
+  transition: color 180ms ease, transform 180ms ease;
+  width: max-content;
+}
+
+.skduo-scroll-cue:hover,
+.skduo-scroll-cue:focus-visible {
+  color: var(--color-green-mint);
+  transform: translateY(2px);
+}
+
+.skduo-scroll-cue__mouse {
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  display: inline-flex;
+  height: 2.4rem;
+  justify-content: center;
+  padding-top: 0.45rem;
+  width: 1.45rem;
+}
+
+.skduo-scroll-cue__dot {
+  animation: skduo-scroll-cue-dot 1.65s ease-in-out infinite;
+  background: currentColor;
+  border-radius: 999px;
+  height: 0.42rem;
+  width: 0.42rem;
+}
+
+@keyframes skduo-scroll-cue-dot {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  45% {
+    opacity: 1;
+    transform: translateY(0.72rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skduo-announcement-track {
+    animation: none;
+  }
+}
+
+.skduo-logo-slider__viewport {
+  overflow: hidden;
+  position: relative;
+}
+
+.skduo-logo-slider__heading {
+  position: relative;
+}
+
+.skduo-logo-slider__title {
+  color: currentColor;
+  text-transform: uppercase;
+}
+
+.skduo-logo-slider__heading::after {
+  background: var(--color-green-mint);
+  content: "";
+  display: block;
+  height: 2px;
+  margin: 1rem auto 0;
+  width: 3rem;
+}
+
+.skduo-logo-slider--dark .skduo-logo-slider__heading {
+  color: rgba(248, 245, 238, 0.92);
+}
+
+.skduo-logo-slider--dark .skduo-logo-slider__heading::after {
+  background: linear-gradient(90deg, var(--color-green-mint), var(--color-lime));
+}
+
+.skduo-logo-slider__track {
+  animation: skduo-logo-slider-scroll 38s linear infinite;
+  display: flex;
+  gap: clamp(3rem, 7vw, 7rem);
+  width: max-content;
+  will-change: transform;
+}
+
+.skduo-logo-slider__track--static {
+  animation: none;
+  width: 100%;
+}
+
+.skduo-logo-slider__track--static .skduo-logo-slider__item {
+  margin-inline: auto;
+}
+
+.skduo-logo-slider__viewport:hover .skduo-logo-slider__track,
+.skduo-logo-slider__viewport:focus-within .skduo-logo-slider__track {
+  animation-play-state: paused;
+}
+
+.skduo-logo-slider__item {
+  align-items: center;
+  display: flex;
+  flex: 0 0 clamp(8rem, 15vw, 13rem);
+  height: clamp(4rem, 8vw, 6rem);
+  justify-content: center;
+  padding: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.skduo-logo-slider__item:hover,
+.skduo-logo-slider__item:focus-visible {
+  opacity: 1;
+  transform: translateY(-2px);
+}
+
+.skduo-logo-slider__item img {
+  filter: none;
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  opacity: 0.68;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.skduo-logo-slider__item:hover img,
+.skduo-logo-slider__item:focus-visible img {
+  opacity: 1;
+}
+
+@keyframes skduo-logo-slider-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(-50% - 0.5rem));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skduo-logo-slider__track {
+    animation: none;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+}
+
+.skduo-noored-slider__track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.skduo-noored-slider__track::-webkit-scrollbar {
+  display: none;
+}
+
+.skduo-noored-slider__slide {
+  aspect-ratio: 4 / 5;
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+}
+
+.skduo-noored-slider__slide img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.skduo-blog-pagination .nav-links {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.skduo-blog-pagination .page-numbers {
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 12%, transparent);
+  color: var(--color-ink);
+  display: inline-flex;
+  justify-content: center;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0 1rem;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+a.page-numbers:hover,
+a.page-numbers:focus-visible {
+  border-color: var(--color-green-deep);
+  color: var(--color-green-deep);
+}
+
+.skduo-blog-pagination .page-numbers.current {
+  background: var(--color-green-deep);
+  border-color: var(--color-green-deep);
+  color: var(--color-paper);
+}
+
+.skduo-blog-pagination .page-numbers.dots {
+  border-color: transparent;
+  color: color-mix(in srgb, var(--color-ink) 40%, transparent);
+}
+
+.skduo-blog-pagination .page-numbers.prev,
+.skduo-blog-pagination .page-numbers.next {
+  padding: 0 1.25rem;
+}
+
+/* Component classes */
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 bg-green-deep text-paper px-7 py-4 text-center text-xs font-extrabold uppercase tracking-widest cursor-pointer transition-all duration-200;
+}
+.btn-primary:hover {
+  @apply bg-ink -translate-y-0.5;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center gap-2 border-2 border-ink text-ink bg-transparent px-6 py-3.5 text-xs font-bold uppercase tracking-widest cursor-pointer transition-all;
+}
+.btn-ghost:hover {
+  @apply bg-ink text-paper;
+}
+
+/* WordPress article content */
+.skduo-article-content {
+  color: color-mix(in srgb, var(--color-ink) 82%, transparent);
+  font-size: 1.0625rem;
+  line-height: 1.85;
+}
+
+.skduo-article-content > * + * {
+  margin-top: 1.35em;
+}
+
+.skduo-article-content h2,
+.skduo-article-content h3,
+.skduo-article-content h4 {
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+  margin-top: 1.4em;
+}
+
+.skduo-article-content h2 {
+  font-size: clamp(2.25rem, 5vw, 4rem);
+}
+
+.skduo-article-content h3 {
+  font-size: clamp(1.85rem, 3.8vw, 3rem);
+}
+
+.skduo-article-content a {
+  color: var(--color-green-deep);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+}
+
+.skduo-article-content ul,
+.skduo-article-content ol {
+  padding-left: 1.35rem;
+}
+
+.skduo-article-content ul {
+  list-style: disc;
+}
+
+.skduo-article-content ol {
+  list-style: decimal;
+}
+
+.skduo-article-content blockquote {
+  border-left: 4px solid var(--color-green-mint);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: clamp(1.7rem, 3vw, 2.6rem);
+  line-height: 1.1;
+  padding-left: 1.5rem;
+}
+
+.skduo-article-content img {
+  border-radius: 28px;
+  height: auto;
+  width: 100%;
+}
+
+.skduo-article-content figcaption {
+  color: color-mix(in srgb, var(--color-ink) 48%, transparent);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin-top: 0.75rem;
+}
+
+/* Animation library hooks (JS picks up via data attributes) */
+
+.skduo-scroll-progress {
+  position: fixed;
+  top: var(--skduo-header-height, 0px);
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-green-mint), var(--color-lime));
+  transform: scaleX(0);
+  transform-origin: 0 0;
+  z-index: 49;
+  transition: transform 0.1s;
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.7s cubic-bezier(0.25, 1, 0.5, 1), transform 0.7s cubic-bezier(0.25, 1, 0.5, 1);
+}
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.skduo-timeline-item[data-reveal] {
+  filter: blur(10px);
+  transform: translateY(3rem);
+  transition-delay: var(--timeline-delay, 0ms);
+  transition-duration: 0.86s;
+  transition-property: opacity, transform, filter;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skduo-timeline-item[data-reveal].is-visible {
+  filter: blur(0);
+}
+
+.skduo-timeline-card {
+  position: relative;
+  transform: translateZ(0);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.skduo-timeline-card::before {
+  background: linear-gradient(90deg, transparent, rgba(111, 200, 181, 0.72), rgba(212, 232, 79, 0.44), transparent);
+  content: "";
+  height: 1px;
+  left: -42%;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: -1px;
+  width: 42%;
+}
+
+.skduo-timeline-item.is-visible .skduo-timeline-card::before {
+  animation: skduo-timeline-beam 1.05s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--timeline-delay, 0ms) + 180ms);
+}
+
+.skduo-timeline-item:hover .skduo-timeline-card,
+.skduo-timeline-item:focus-within .skduo-timeline-card {
+  border-color: color-mix(in srgb, var(--color-green-deep) 40%, transparent);
+  box-shadow: 0 24px 60px rgba(10, 21, 24, 0.08);
+  transform: translateY(-0.22rem);
+}
+
+.skduo-timeline-year {
+  transform: translateX(0.45rem);
+  transition: color 220ms ease, transform 220ms ease;
+}
+
+.skduo-timeline-item.is-visible .skduo-timeline-year {
+  transform: translateX(0);
+}
+
+.skduo-timeline-item:hover .skduo-timeline-year,
+.skduo-timeline-item:focus-within .skduo-timeline-year {
+  color: var(--color-ink);
+}
+
+.skduo-timeline-line {
+  transform: scaleY(0);
+  transform-origin: top;
+}
+
+.skduo-timeline-item.is-visible .skduo-timeline-line {
+  animation: skduo-timeline-line 0.92s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--timeline-delay, 0ms) + 240ms);
+}
+
+.skduo-timeline-node {
+  box-shadow: 0 0 0 0 rgba(111, 200, 181, 0);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.skduo-timeline-item.is-visible .skduo-timeline-node {
+  animation: skduo-timeline-node 0.72s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--timeline-delay, 0ms) + 80ms);
+}
+
+.skduo-timeline-item:hover .skduo-timeline-node,
+.skduo-timeline-item:focus-within .skduo-timeline-node {
+  border-color: var(--color-green-deep);
+  box-shadow: 0 0 0 0.42rem rgba(111, 200, 181, 0.13);
+  transform: scale(1.08);
+}
+
+@keyframes skduo-timeline-line {
+  from {
+    transform: scaleY(0);
+  }
+
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes skduo-timeline-node {
+  0% {
+    opacity: 0;
+    transform: scale(0.58);
+  }
+
+  62% {
+    opacity: 1;
+    transform: scale(1.16);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes skduo-timeline-beam {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+
+  20%, 62% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(340%);
+  }
+}
+
+.skduo-news-heading[data-reveal] {
+  filter: blur(10px);
+}
+
+.skduo-news-heading[data-reveal].is-visible {
+  filter: blur(0);
+}
+
+.skduo-news-card[data-reveal] {
+  clip-path: inset(14% 0 0 0 round 28px);
+  filter: blur(14px);
+  transform: perspective(1100px) translateY(90px) rotateX(10deg) scale(0.9);
+  transform-origin: center bottom;
+  transition-duration: 0.95s;
+  transition-property: opacity, transform, filter, clip-path, border-color, box-shadow;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.skduo-news-card[data-reveal]:not(.is-visible) {
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.skduo-news-card[data-reveal].is-visible {
+  animation: skduo-news-card-pop 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--reveal-delay, 0ms);
+  clip-path: inset(0 0 0 0 round 28px);
+  filter: blur(0);
+}
+
+.skduo-news-card__image {
+  transform: scale(1.14);
+  transform-origin: center;
+}
+
+.skduo-news-card.is-visible .skduo-news-card__image {
+  transform: scale(1);
+  transition-duration: 1.15s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--reveal-delay, 0ms) + 120ms);
+}
+
+.skduo-news-card__beam {
+  background: linear-gradient(90deg, transparent, rgba(111, 200, 181, 0.76), rgba(212, 232, 79, 0.58), transparent);
+  height: 1px;
+  left: -45%;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  right: auto;
+  top: 0;
+  transform: translateX(0);
+  width: 46%;
+  z-index: 9;
+}
+
+.skduo-news-card.is-visible .skduo-news-card__beam {
+  animation: skduo-news-card-beam 1.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--reveal-delay, 0ms) + 160ms);
+}
+
+@keyframes skduo-news-card-pop {
+  0% {
+    opacity: 0;
+    transform: perspective(1100px) translateY(90px) rotateX(10deg) scale(0.9);
+  }
+
+  62% {
+    opacity: 1;
+    transform: perspective(1100px) translateY(-10px) rotateX(-1deg) scale(1.018);
+  }
+
+  100% {
+    opacity: 1;
+    transform: perspective(1100px) translateY(0) rotateX(0) scale(1);
+  }
+}
+
+@keyframes skduo-news-card-beam {
+  0% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+
+  18%, 68% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(315%);
+  }
+}
+
+[data-tilt] {
+  transition: transform 0.15s ease-out;
+  transform-style: preserve-3d;
+}
+
+[data-magnet] {
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.skduo-hero-mosaic {
+  --hero-x: 50%;
+  --hero-y: 45%;
+  --hero-r: 0px;
+  -webkit-mask-image: radial-gradient(circle at var(--hero-x) var(--hero-y), #000 0, #000 var(--hero-r), transparent calc(var(--hero-r) + 180px));
+  mask-image: radial-gradient(circle at var(--hero-x) var(--hero-y), #000 0, #000 var(--hero-r), transparent calc(var(--hero-r) + 180px));
+  transition: opacity 0.25s ease;
+}
+
+[data-hero-spotlight].is-active .skduo-hero-mosaic {
+  --hero-r: 220px;
+}
+
+.skduo-hero-kicker {
+  opacity: 0;
+  transform: translateY(-18px);
+  transition: opacity 0.75s ease, transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.is-hero-ready .skduo-hero-kicker {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.skduo-hero-title {
+  perspective: 1200px;
+}
+
+.skduo-hero-title__line {
+  clip-path: inset(0 0 100% 0);
+  display: block;
+  filter: blur(12px);
+  opacity: 0;
+  transform: translateY(0.32em) rotateX(18deg) scale(0.96);
+  transform-origin: left bottom;
+}
+
+.is-hero-ready .skduo-hero-title__line {
+  animation: skduo-hero-title-line 1.05s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.is-hero-ready .skduo-hero-title__line:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.skduo-hero-copy {
+  opacity: 0;
+  transform: translateY(34px);
+}
+
+.is-hero-ready .skduo-hero-copy {
+  animation: skduo-hero-copy-in 0.92s cubic-bezier(0.16, 1, 0.3, 1) 0.54s both;
+}
+
+.skduo-hero-match-card {
+  --hero-match-x: 0px;
+  justify-self: stretch;
+  max-width: 100%;
+  opacity: 0;
+  transform: perspective(1100px) translate(var(--hero-match-x), 46px) rotateX(7deg) scale(0.96);
+  transform-origin: center bottom;
+}
+
+.is-hero-ready .skduo-hero-match-card {
+  animation: skduo-hero-match-in 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.72s both;
+}
+
+.skduo-hero-match-team-name {
+  font-size: clamp(1.9rem, 2vw, 2.7rem);
+  overflow-wrap: anywhere;
+}
+
+.skduo-hero-match-vs {
+  flex: 0 0 auto;
+  font-size: clamp(1.75rem, 2vw, 2.7rem);
+}
+
+@keyframes skduo-hero-title-line {
+  0% {
+    clip-path: inset(0 0 100% 0);
+    filter: blur(12px);
+    opacity: 0;
+    transform: translateY(0.32em) rotateX(18deg) scale(0.96);
+  }
+
+  58% {
+    clip-path: inset(0 0 0 0);
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(-0.035em) rotateX(-2deg) scale(1.015);
+  }
+
+  100% {
+    clip-path: inset(0 0 0 0);
+    filter: blur(0);
+    opacity: 1;
+    transform: translateY(0) rotateX(0) scale(1);
+  }
+}
+
+@keyframes skduo-hero-copy-in {
+  0% {
+    opacity: 0;
+    transform: translateY(34px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes skduo-hero-match-in {
+  0% {
+    opacity: 0;
+    transform: perspective(1100px) translate(var(--hero-match-x), 46px) rotateX(7deg) scale(0.96);
+  }
+
+  68% {
+    opacity: 1;
+    transform: perspective(1100px) translate(var(--hero-match-x), -8px) rotateX(-1deg) scale(1.012);
+  }
+
+  100% {
+    opacity: 1;
+    transform: perspective(1100px) translate(var(--hero-match-x), 0) rotateX(0) scale(1);
+  }
+}
+
+@media (max-width: 639px) {
+  .skduo-article-content {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  .skduo-article-content blockquote {
+    padding-left: 1rem;
+  }
+
+  .skduo-article-content img {
+    border-radius: 18px;
+  }
+
+  .skduo-hero-match-teams {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .skduo-hero-match-vs {
+    line-height: 1;
+  }
+
+  .skduo-hero-match-card {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .skduo-hero-layout {
+    align-items: end;
+  }
+
+  .skduo-hero-match-card {
+    --hero-match-x: -2.5vw;
+  }
+}
+
+/* Blog bento cards */
+.skduo-bento-card {
+  --glow-x: 50%;
+  --glow-y: 50%;
+  --glow-intensity: 0;
+  --glow-radius: 220px;
+  --glow-color: 111, 200, 181;
+  transform-style: preserve-3d;
+}
+
+.skduo-bento-card:hover,
+.skduo-bento-card:focus-within {
+  will-change: transform;
+}
+
+.skduo-bento-card::before,
+.skduo-bento-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: var(--glow-intensity);
+  transition: opacity 0.25s ease;
+}
+
+.skduo-bento-card::before {
+  z-index: 2;
+  background: radial-gradient(
+    var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+    rgba(var(--glow-color), 0.2),
+    rgba(var(--glow-color), 0.08) 36%,
+    transparent 68%
+  );
+  mix-blend-mode: screen;
+}
+
+.skduo-bento-card::after {
+  z-index: 4;
+  padding: 1px;
+  background: radial-gradient(
+    var(--glow-radius) circle at var(--glow-x) var(--glow-y),
+    rgba(var(--glow-color), 0.9),
+    rgba(var(--glow-color), 0.28) 35%,
+    transparent 65%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+
+.skduo-bento-card:hover {
+  border-color: rgba(var(--glow-color), 0.42);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.32), 0 0 36px rgba(var(--glow-color), 0.12);
+}
+
+.skduo-bento-particle,
+.skduo-bento-ripple {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 999px;
+}
+
+.skduo-bento-particle {
+  z-index: 5;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  background: rgba(var(--glow-color), 0.88);
+  box-shadow: 0 0 18px rgba(var(--glow-color), 0.65);
+  animation: skduo-bento-particle 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.skduo-bento-ripple {
+  z-index: 6;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: var(--size);
+  background: radial-gradient(circle, rgba(var(--glow-color), 0.34), rgba(var(--glow-color), 0.12) 34%, transparent 68%);
+  transform: translate(-50%, -50%) scale(0);
+  animation: skduo-bento-ripple 750ms ease-out forwards;
+}
+
+@keyframes skduo-bento-particle {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.45);
+  }
+  18% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--tx), var(--ty), 0) scale(0.08);
+  }
+}
+
+@keyframes skduo-bento-ripple {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.skduo-bento-volleyball {
+  position: absolute;
+  z-index: 6;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  width: 48px;
+  height: 48px;
+  opacity: 0;
+  transform: scale(0.4) rotate(-35deg);
+  transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 0 12px rgba(var(--glow-color), 0.55));
+  pointer-events: none;
+}
+
+.skduo-bento-card:hover .skduo-bento-volleyball,
+.skduo-bento-card:focus-within .skduo-bento-volleyball {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.skduo-bento-volleyball canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+@media (hover: none) {
+  .skduo-hero-mosaic {
+    --hero-r: 999px;
+    opacity: 0.28;
+  }
+
+  .skduo-bento-card {
+    --glow-intensity: 0 !important;
+    transform: none !important;
+  }
+
+  .skduo-bento-volleyball {
+    display: none;
+  }
+}
+
+[data-kinetic] .kw {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(40px) rotateX(-90deg);
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-kinetic] .kw.in {
+  opacity: 1;
+  transform: translateY(0) rotateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==========================================================================
+   WooCommerce integration
+   My Account uses the classic [woocommerce_my_account] shortcode (scoped
+   under .woocommerce, classic stylesheets dequeued in inc/woocommerce.php).
+   Cart/Checkout use WooCommerce Blocks — their stylesheets stay enqueued
+   (load-bearing for layout/interactivity), this only restyles the surface.
+   ========================================================================== */
+
+.woocommerce table.shop_table,
+.wc-block-cart-items,
+.wc-block-components-totals-wrapper {
+  border-color: color-mix(in srgb, var(--color-ink) 10%, transparent);
+}
+
+.woocommerce table.shop_table {
+  border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.woocommerce table.shop_table th,
+.woocommerce table.shop_table td {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  padding: 1rem;
+  text-align: left;
+}
+
+.woocommerce table.shop_table th {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.woocommerce-message,
+.woocommerce-info,
+.woocommerce-error,
+.woocommerce-noreviews,
+.woocommerce-Message {
+  background: var(--color-cream);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  border-radius: 0;
+  color: var(--color-ink);
+  list-style: none;
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.25rem;
+}
+
+.woocommerce-error {
+  background: color-mix(in srgb, var(--color-coral) 12%, var(--color-paper));
+  border-color: color-mix(in srgb, var(--color-coral) 40%, transparent);
+}
+
+.woocommerce a.button,
+.woocommerce button.button,
+.woocommerce input.button,
+.woocommerce #respond input#submit,
+.woocommerce-MyAccount-navigation-link a {
+  background: var(--color-green-deep);
+  border: none;
+  border-radius: 9999px;
+  color: var(--color-paper);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.9rem 1.6rem;
+  text-transform: uppercase;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.woocommerce a.button:hover,
+.woocommerce button.button:hover,
+.woocommerce input.button:hover,
+.woocommerce #respond input#submit:hover {
+  background: var(--color-ink);
+  transform: translateY(-1px);
+}
+
+.woocommerce input[type="text"],
+.woocommerce input[type="email"],
+.woocommerce input[type="tel"],
+.woocommerce input[type="password"],
+.woocommerce input[type="number"],
+.woocommerce textarea,
+.woocommerce select,
+.wc-block-components-text-input input,
+.wc-block-components-address-form input {
+  background: var(--color-paper);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
+  border-radius: 4px;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  padding: 0.75rem 0.9rem;
+}
+
+.woocommerce-MyAccount-navigation ul {
+  border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0 0 2rem;
+  padding: 0;
+}
+
+.woocommerce-MyAccount-navigation-link {
+  border-right: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+}
+
+.woocommerce-MyAccount-navigation-link a {
+  background: transparent;
+  border-radius: 0;
+  color: var(--color-ink);
+  display: block;
+  font-weight: 700;
+  padding: 0.75rem 1.1rem;
+}
+
+.woocommerce-MyAccount-navigation-link.is-active a {
+  background: var(--color-green-deep);
+  color: var(--color-paper);
+}
+
+.woocommerce-MyAccount-content {
+  font-family: var(--font-sans);
+}
+
+/* WooCommerce Blocks (Cart/Checkout) — restyle on top of the required block CSS. */
+.wp-block-woocommerce-cart,
+.wp-block-woocommerce-checkout {
+  font-family: var(--font-sans);
+}
+
+.wc-block-components-button:not(.is-link) {
+  background: var(--color-green-deep) !important;
+  border-radius: 9999px !important;
+  color: var(--color-paper) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+.wc-block-components-button:not(.is-link):hover {
+  background: var(--color-ink) !important;
+}
+
+.wc-block-components-totals-item__value,
+.wc-block-components-formatted-money-amount {
+  color: var(--color-green-deep);
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+.wc-block-components-panel,
+.wc-block-cart-items,
+.wc-block-components-totals-wrapper,
+.wc-block-components-order-summary {
+  border-color: color-mix(in srgb, var(--color-ink) 10%, transparent) !important;
+}
+
+/* ==========================================================================
+   Contact Form 7 — /kontakt (resources/views/page-kontakt.blade.php)
+   ========================================================================== */
+
+.skduo-contact-form .wpcf7-form p {
+  margin: 0 0 1rem;
+}
+
+.skduo-contact-form .wpcf7-form label {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+}
+
+.skduo-contact-form .wpcf7-form-control:not([type="submit"]):not([type="checkbox"]):not([type="radio"]) {
+  background: var(--color-paper);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  transition: border-color 0.2s ease;
+  width: 100%;
+}
+
+.skduo-contact-form .wpcf7-form-control:not([type="submit"]):focus {
+  border-color: var(--color-green-deep);
+  outline: none;
+}
+
+.skduo-contact-form .wpcf7-form-control.wpcf7-textarea {
+  min-height: 9rem;
+}
+
+.skduo-contact-form input.wpcf7-submit {
+  background: var(--color-green-deep);
+  border: none;
+  border-radius: 9999px;
+  color: var(--color-paper);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 0.9rem 1.8rem;
+  text-transform: uppercase;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.skduo-contact-form input.wpcf7-submit:hover {
+  background: var(--color-ink);
+  transform: translateY(-1px);
+}
+
+.skduo-contact-form .wpcf7-spinner {
+  margin-left: 0.75rem;
+}
+
+.skduo-contact-form .wpcf7-response-output {
+  border-radius: 0;
+  font-size: 0.85rem;
+  margin: 1rem 0 0;
+  padding: 0.85rem 1.1rem;
+}
+
+.skduo-contact-form form.sent .wpcf7-response-output {
+  background: color-mix(in srgb, var(--color-green-mint) 18%, var(--color-paper));
+  border-color: var(--color-green-deep) !important;
+  color: var(--color-green-deep);
+}
+
+.skduo-contact-form form.failed .wpcf7-response-output,
+.skduo-contact-form form.aborted .wpcf7-response-output {
+  background: color-mix(in srgb, var(--color-coral) 12%, var(--color-paper));
+  border-color: var(--color-coral) !important;
+  color: var(--color-coral);
+}
+
+.skduo-contact-form .wpcf7-not-valid-tip {
+  color: var(--color-coral);
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+}
