@@ -474,6 +474,12 @@ if ( ! function_exists( 'skduo_match_data' ) ) {
 	}
 }
 
+if ( ! function_exists( 'skduo_get_training_groups' ) ) {
+	function skduo_get_training_groups(): array {
+		return [];
+	}
+}
+
 if ( ! function_exists( 'skduo_get_teams_with_players' ) ) {
 	function skduo_get_teams_with_players(): array {
 		return [];

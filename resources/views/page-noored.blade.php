@@ -43,30 +43,7 @@
       ];
     }
 
-    $groupPosts = post_type_exists('treeninggrupp')
-      ? get_posts(['post_type' => 'treeninggrupp', 'post_status' => 'publish', 'posts_per_page' => -1, 'orderby' => ['menu_order' => 'ASC', 'title' => 'ASC']])
-      : [];
-
-    $trainingGroups = [];
-    foreach ($groupPosts as $post) {
-      $coachId = (int) get_post_meta($post->ID, '_coach_id', true);
-      $coachName = $coachId ? get_the_title($coachId) : 'Treener täpsustamisel';
-      $key = $coachId ?: 'coach-' . sanitize_title($coachName);
-
-      if (! isset($trainingGroups[$key])) {
-        $trainingGroups[$key] = [
-          'coach' => $coachName,
-          'groups' => [],
-          'contact' => array_values(array_filter(preg_split('/\R+/', (string) get_post_meta($post->ID, '_contact', true)) ?: [])),
-        ];
-      }
-
-      $trainingGroups[$key]['groups'][] = [
-        'title' => (string) get_post_meta($post->ID, '_age_group', true) ?: get_the_title($post),
-        'times' => array_values(array_filter(preg_split('/\R+/', (string) get_post_meta($post->ID, '_schedule', true)) ?: [])),
-      ];
-    }
-    $trainingGroups = array_values($trainingGroups);
+    $trainingGroups = skduo_get_training_groups();
 
     if (empty($trainingGroups)) {
       $trainingGroups = [
@@ -76,7 +53,7 @@
             ['title' => 'U-18/U-20 tüdrukud (2007-2009)', 'times' => ['Esmaspäev: 17.00-18.30 A. Le Coq SH II saal', 'Teisipäev: 17.30-19.00 TÜ SH kollane saal', 'Kolmapäev: 19.00-21.00 TÜ SH kollane saal/Hall', 'Neljapäev: 16.30-17.30 ÜKE TÜ SH']],
             ['title' => 'U-14/U-16 tüdrukud (2012-2013)', 'times' => ['Teisipäev: 16.00-17.30 TÜ SH kollane saal', 'Kolmapäev: 16.00-17.30 TÜ SH kollane saal', 'Neljapäev: 19.00-20.00 ÜKE TÜ SH', 'Reede: 15.30-17.30 TÜ SH kollane saal']],
           ],
-          'contact' => ['Telefon: 59115429', 'E-post: annabelhuik@gmail.com'],
+          'contact' => ['phone' => '59115429', 'phone_href' => 'tel:59115429', 'email' => 'annabelhuik@gmail.com', 'extra' => []],
         ],
       ];
     }
@@ -206,17 +183,8 @@
           @php
             $coachPanelId = 'coach-panel-' . $loop->index;
             $groupCount = count($group['groups']);
-            $contactItems = array_map(function ($line) {
-              $line = trim((string) $line);
-              $value = trim(preg_replace('/^[^:]{1,20}:\s*/u', '', $line));
-              if (preg_match('/[^\s@]+@[^\s@]+\.[^\s@]+/', $line, $m)) {
-                return ['type' => 'email', 'label' => 'E-post', 'value' => $m[0], 'href' => 'mailto:' . $m[0]];
-              }
-              if (preg_match('/\+?\d[\d\s-]{5,}\d/', $line, $m)) {
-                return ['type' => 'phone', 'label' => 'Telefon', 'value' => trim($m[0]), 'href' => 'tel:' . preg_replace('/[^\d+]/', '', $m[0])];
-              }
-              return ['type' => 'text', 'label' => '', 'value' => $value !== '' ? $value : $line, 'href' => ''];
-            }, $group['contact'] ?? []);
+            $contact = $group['contact'] ?? [];
+            $hasContact = ! empty($contact['phone']) || ! empty($contact['email']) || ! empty($contact['extra']);
           @endphp
           <article class="skduo-coach-card" data-coach-card data-coach-name="{{ esc_attr(mb_strtolower($group['coach'])) }}">
             <div class="min-w-0">
@@ -258,24 +226,27 @@
                 @endforeach
               </div>
 
-              @if(! empty($contactItems))
+              @if($hasContact)
                 <div class="skduo-coach-panel__contact">
                   <p class="mb-3 inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-green-deep">
                     <span class="h-0.5 w-5 bg-green-deep"></span>
                     Kontakt
                   </p>
                   <ul class="space-y-2 text-sm leading-relaxed">
-                    @foreach($contactItems as $item)
+                    @if(! empty($contact['phone']))
                       <li>
-                        @if($item['label'])
-                          <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/45">{{ $item['label'] }}</span>
-                        @endif
-                        @if($item['href'])
-                          <a href="{{ esc_attr($item['href']) }}" class="skduo-coach-panel__link">{{ $item['value'] }}</a>
-                        @else
-                          <span class="text-ink/65">{{ $item['value'] }}</span>
-                        @endif
+                        <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/45">Telefon</span>
+                        <a href="{{ esc_attr($contact['phone_href']) }}" class="skduo-coach-panel__link">{{ $contact['phone'] }}</a>
                       </li>
+                    @endif
+                    @if(! empty($contact['email']))
+                      <li>
+                        <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/45">E-post</span>
+                        <a href="mailto:{{ esc_attr($contact['email']) }}" class="skduo-coach-panel__link">{{ $contact['email'] }}</a>
+                      </li>
+                    @endif
+                    @foreach($contact['extra'] ?? [] as $line)
+                      <li><span class="text-ink/65">{{ $line }}</span></li>
                     @endforeach
                   </ul>
                 </div>
