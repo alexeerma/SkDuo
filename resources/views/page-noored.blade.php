@@ -196,27 +196,60 @@
             type="search"
             placeholder="Otsi treenerit..."
             class="w-full max-w-sm border border-ink/15 bg-white px-4 py-3 text-sm text-ink transition focus:border-green-deep focus:outline-none sm:max-w-xs"
-            data-training-group-filter
+            data-coach-filter
           >
         </div>
       @endif
 
-      <div class="grid items-start gap-4 lg:grid-cols-3" data-training-group-list>
+      <div class="skduo-coach-grid" data-coach-grid>
         @foreach($trainingGroups as $group)
-          <details class="group border border-ink/10 bg-white p-6 transition duration-300 data-[state=open]:border-green-deep/45 data-[state=open]:shadow-[0_24px_60px_rgba(10,21,24,.08)]" data-training-group-card data-state="closed" data-coach-name="{{ esc_attr(mb_strtolower($group['coach'])) }}">
-            <summary class="flex cursor-pointer list-none items-center justify-between gap-4">
+          @php
+            $coachPanelId = 'coach-panel-' . $loop->index;
+            $groupCount = count($group['groups']);
+            $contactItems = array_map(function ($line) {
+              $line = trim((string) $line);
+              $value = trim(preg_replace('/^[^:]{1,20}:\s*/u', '', $line));
+              if (preg_match('/[^\s@]+@[^\s@]+\.[^\s@]+/', $line, $m)) {
+                return ['type' => 'email', 'label' => 'E-post', 'value' => $m[0], 'href' => 'mailto:' . $m[0]];
+              }
+              if (preg_match('/\+?\d[\d\s-]{5,}\d/', $line, $m)) {
+                return ['type' => 'phone', 'label' => 'Telefon', 'value' => trim($m[0]), 'href' => 'tel:' . preg_replace('/[^\d+]/', '', $m[0])];
+              }
+              return ['type' => 'text', 'label' => '', 'value' => $value !== '' ? $value : $line, 'href' => ''];
+            }, $group['contact'] ?? []);
+          @endphp
+          <article class="skduo-coach-card" data-coach-card data-coach-name="{{ esc_attr(mb_strtolower($group['coach'])) }}">
+            <div class="min-w-0">
               <h3 class="font-display text-3xl leading-none tracking-wide text-green-deep">{{ $group['coach'] }}</h3>
-              <span class="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-ink/15 text-lg leading-none text-ink transition duration-300 ease-out group-data-[state=open]:rotate-45 group-data-[state=open]:border-green-deep group-data-[state=open]:text-green-deep" aria-hidden="true">
-                +
+              <p class="mt-2 text-xs font-extrabold uppercase tracking-[0.14em] text-ink/45">
+                {{ $groupCount }} {{ $groupCount === 1 ? 'grupp' : 'gruppi' }}
+              </p>
+            </div>
+            <button
+              type="button"
+              class="skduo-coach-card__toggle"
+              aria-expanded="false"
+              aria-controls="{{ $coachPanelId }}"
+              data-coach-toggle
+            >
+              <span class="sr-only">{{ $group['coach'] }}: treeninggrupid</span>
+              <span class="skduo-coach-card__label" aria-hidden="true">
+                <span class="skduo-coach-card__label-closed">Vaata gruppe</span>
+                <span class="skduo-coach-card__label-open">Sulge</span>
               </span>
-            </summary>
+              <svg class="skduo-coach-card__chevron" viewBox="0 0 12 8" width="12" height="8" fill="none" aria-hidden="true" focusable="false">
+                <path d="M1 1.5 6 6.5l5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+              </svg>
+            </button>
+          </article>
 
-            <div data-training-group-body class="overflow-hidden">
-              <div class="mt-6 space-y-6">
+          <div id="{{ $coachPanelId }}" class="skduo-coach-panel" role="region" aria-label="{{ esc_attr($group['coach']) }}: treeninggrupid" data-coach-panel hidden>
+            <div class="skduo-coach-panel__inner">
+              <div class="skduo-coach-panel__groups">
                 @foreach($group['groups'] as $coachGroup)
                   <div>
-                    <h4 class="text-sm font-extrabold text-ink">{{ $coachGroup['title'] }}</h4>
-                    <ul class="mt-3 space-y-1 text-sm leading-relaxed text-ink/65">
+                    <h4 class="text-sm font-extrabold leading-snug text-ink">{{ $coachGroup['title'] }}</h4>
+                    <ul class="mt-2 space-y-1 text-sm leading-relaxed text-ink/65">
                       @foreach($coachGroup['times'] as $time)
                         <li>{{ $time }}</li>
                       @endforeach
@@ -224,17 +257,35 @@
                   </div>
                 @endforeach
               </div>
-              <div class="mt-6 border-t border-ink/10 pt-4 text-sm leading-relaxed text-ink/58">
-                @foreach($group['contact'] as $contact)
-                  <div>{{ $contact }}</div>
-                @endforeach
-              </div>
+
+              @if(! empty($contactItems))
+                <div class="skduo-coach-panel__contact">
+                  <p class="mb-3 inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.14em] text-green-deep">
+                    <span class="h-0.5 w-5 bg-green-deep"></span>
+                    Kontakt
+                  </p>
+                  <ul class="space-y-2 text-sm leading-relaxed">
+                    @foreach($contactItems as $item)
+                      <li>
+                        @if($item['label'])
+                          <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/45">{{ $item['label'] }}</span>
+                        @endif
+                        @if($item['href'])
+                          <a href="{{ esc_attr($item['href']) }}" class="skduo-coach-panel__link">{{ $item['value'] }}</a>
+                        @else
+                          <span class="text-ink/65">{{ $item['value'] }}</span>
+                        @endif
+                      </li>
+                    @endforeach
+                  </ul>
+                </div>
+              @endif
             </div>
-          </details>
+          </div>
         @endforeach
       </div>
 
-      <p class="mt-4 hidden text-sm font-semibold text-ink/50" data-training-group-empty>
+      <p class="mt-4 hidden text-sm font-semibold text-ink/50" data-coach-empty>
         Ühtegi treenerit ei leitud.
       </p>
     </div>

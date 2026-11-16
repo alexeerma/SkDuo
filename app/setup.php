@@ -74,8 +74,7 @@ add_action('after_setup_theme', function () {
     /**
      * Enable WooCommerce template support for the merch catalog.
      */
+    // Gallery zoom/lightbox/slider supports are intentionally off: single-product.blade.php
+    // renders its own gallery, so WC's flexslider/photoswipe scripts would load unused.
     add_theme_support('woocommerce');
-    add_theme_support('wc-product-gallery-zoom');
-    add_theme_support('wc-product-gallery-lightbox');
-    add_theme_support('wc-product-gallery-slider');
 }, 20);

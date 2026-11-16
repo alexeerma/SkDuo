@@ -150,6 +150,23 @@ body.is-menu-open {
   color: var(--color-green-deep);
 }
 
+/* Shared pill family for team header: level, league, season picker. Same box size for all. */
+.skduo-team-pill {
+  align-items: center;
+  border-style: solid;
+  border-width: 1px;
+  box-sizing: border-box;
+  display: inline-flex;
+  font-size: 0.62rem;
+  font-weight: 800;
+  height: 2rem;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  padding: 0 0.75rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
 .skduo-season-picker {
   min-width: 10.5rem;
   z-index: 20;
@@ -161,15 +178,9 @@ body.is-menu-open {
   border: 1px solid var(--color-ink);
   color: var(--color-paper);
   cursor: pointer;
-  display: inline-flex;
-  font-size: 0.62rem;
-  font-weight: 800;
+  display: flex; /* block-level so the wrapper div has no extra line-box height */
   gap: 0.8rem;
   justify-content: space-between;
-  letter-spacing: 0.14em;
-  min-height: 2.75rem;
-  padding: 0.45rem 0.72rem;
-  text-transform: uppercase;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
   width: 100%;
 }
@@ -1163,6 +1174,178 @@ a.page-numbers:focus-visible {
 }
 
 /* ==========================================================================
+   Coach cards + full-width detail panel (/noored "Treenerite kaupa")
+   Each card is followed by its panel in the DOM. The panel spans every
+   column and `row dense` backfills the current row with the next cards,
+   so the open panel always lands directly under the clicked card's row.
+   ========================================================================== */
+.skduo-coach-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-flow: row dense;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .skduo-coach-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .skduo-coach-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.skduo-coach-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  cursor: pointer;
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.skduo-coach-card:hover {
+  border-color: color-mix(in srgb, var(--color-green-deep) 45%, transparent);
+}
+
+.skduo-coach-card.is-open {
+  background: var(--color-green-deep);
+  border-color: var(--color-green-deep);
+}
+
+.skduo-coach-card.is-open h3 { color: var(--color-paper); }
+.skduo-coach-card.is-open p { color: color-mix(in srgb, var(--color-paper) 65%, transparent); }
+
+/* Notch pointing from the open card into its panel. */
+.skduo-coach-card.is-open::after {
+  content: "";
+  position: absolute;
+  left: 2rem;
+  bottom: -0.5rem;
+  width: 1rem;
+  height: 1rem;
+  background: var(--color-green-deep);
+  transform: rotate(45deg);
+}
+
+/* Editorial text toggle: eyebrow bar + uppercase label + thin chevron. */
+.skduo-coach-card__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  margin-top: auto;
+  padding: 0.25rem 0;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-green-deep);
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.skduo-coach-card.is-open .skduo-coach-card__toggle { color: var(--color-paper); }
+
+.skduo-coach-card.is-open .skduo-coach-card__chevron {
+  color: var(--color-green-mint);
+}
+
+.skduo-coach-card__toggle:focus { outline: none; }
+
+.skduo-coach-card__toggle:focus-visible {
+  outline: 2px solid var(--color-green-mint);
+  outline-offset: 4px;
+}
+
+.skduo-coach-card__label-open { display: none; }
+.skduo-coach-card.is-open .skduo-coach-card__label-open { display: inline; }
+.skduo-coach-card.is-open .skduo-coach-card__label-closed { display: none; }
+
+.skduo-coach-card__chevron {
+  flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.skduo-coach-card.is-open .skduo-coach-card__chevron { transform: rotate(180deg); }
+
+.skduo-coach-panel {
+  grid-column: 1 / -1;
+  border: 1px solid color-mix(in srgb, var(--color-green-deep) 35%, transparent);
+  border-top: 3px solid var(--color-green-deep);
+  background: #fff;
+  animation: skduo-coach-panel-in 0.32s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.skduo-coach-panel[hidden] { display: none; }
+
+.skduo-coach-panel__inner {
+  display: grid;
+  gap: 1.75rem;
+  padding: 1.5rem;
+}
+
+.skduo-coach-panel__groups {
+  display: grid;
+  gap: 1.25rem 2rem;
+}
+
+@media (min-width: 640px) {
+  .skduo-coach-panel__inner { padding: 1.75rem 2rem; }
+  .skduo-coach-panel__groups { grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); }
+}
+
+@media (min-width: 1024px) {
+  .skduo-coach-panel__inner {
+    grid-template-columns: minmax(0, 1fr) 15rem;
+    gap: 2.5rem;
+  }
+
+  .skduo-coach-panel__contact {
+    padding-left: 2rem;
+    border-left: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+}
+
+@media (max-width: 1023px) {
+  .skduo-coach-panel__contact {
+    padding-top: 1.25rem;
+    border-top: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  }
+}
+
+.skduo-coach-panel__link {
+  font-weight: 600;
+  color: var(--color-green-deep);
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--color-green-deep) 30%, transparent);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+
+.skduo-coach-panel__link:hover { text-decoration-color: currentColor; }
+
+.skduo-coach-panel__link:focus-visible {
+  outline: 2px solid var(--color-green-mint);
+  outline-offset: 2px;
+}
+
+@keyframes skduo-coach-panel-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skduo-coach-panel { animation: none; }
+  .skduo-coach-card__chevron { transition: none; }
+}
+
+/* ==========================================================================
    WooCommerce integration
    My Account uses the classic [woocommerce_my_account] shortcode (scoped
    under .woocommerce, classic stylesheets dequeued in inc/woocommerce.php).
@@ -1412,4 +1595,460 @@ a.page-numbers:focus-visible {
   color: var(--color-coral);
   font-size: 0.78rem;
   margin-top: 0.35rem;
+}
+
+/* ==========================================================================
+   Shop: product archive + single product
+   (archive-product / single-product / partials/product-card blade views)
+   ========================================================================== */
+
+.skduo-product-price del {
+  margin-right: 0.4em;
+  font-size: 0.72em;
+  color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  text-decoration-thickness: 1px;
+}
+.skduo-product-price ins {
+  text-decoration: none;
+}
+
+/* Category filter pills */
+.skduo-shop-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+@media (max-width: 639px) {
+  .skduo-shop-filters {
+    flex-wrap: nowrap;
+    margin-inline: -1rem;
+    overflow-x: auto;
+    padding-inline: 1rem;
+    scrollbar-width: none;
+    width: calc(100% + 2rem);
+  }
+  .skduo-shop-filters::-webkit-scrollbar { display: none; }
+}
+.skduo-shop-pill {
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+  border-radius: 9999px;
+  color: color-mix(in srgb, var(--color-ink) 70%, transparent);
+  display: inline-flex;
+  flex-shrink: 0;
+  font-size: 0.66rem;
+  font-weight: 800;
+  height: 2.125rem;
+  letter-spacing: 0.12em;
+  padding: 0 0.95rem;
+  text-transform: uppercase;
+  transition: background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+}
+.skduo-shop-pill:hover {
+  border-color: var(--color-green-deep);
+  color: var(--color-green-deep);
+}
+.skduo-shop-pill[aria-current="page"] {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-paper);
+}
+.skduo-shop-pill:focus-visible {
+  outline: 2px solid var(--color-green-deep);
+  outline-offset: 2px;
+}
+
+/* Pagination */
+.skduo-shop-pagination {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: center;
+}
+.skduo-shop-pagination .page-numbers {
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+  border-radius: 9999px;
+  display: inline-flex;
+  font-size: 0.7rem;
+  font-weight: 800;
+  height: 2.5rem;
+  justify-content: center;
+  letter-spacing: 0.12em;
+  min-width: 2.5rem;
+  padding: 0 0.9rem;
+  text-transform: uppercase;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+.skduo-shop-pagination a.page-numbers:hover { border-color: var(--color-green-deep); color: var(--color-green-deep); }
+.skduo-shop-pagination .page-numbers.current { background: var(--color-ink); border-color: var(--color-ink); color: var(--color-paper); }
+.skduo-shop-pagination .page-numbers.dots { border-color: transparent; }
+.skduo-shop-pagination a.page-numbers:focus-visible { outline: 2px solid var(--color-green-deep); outline-offset: 2px; }
+
+/* Product card */
+.skduo-product-card__media,
+.skduo-product-gallery__stage,
+.skduo-product-thumb {
+  background: color-mix(in srgb, var(--color-cream) 55%, #fff);
+}
+.skduo-product-card__media {
+  transition: box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.skduo-product-card__image {
+  height: 100%;
+  inset: 0;
+  mix-blend-mode: multiply;
+  object-fit: contain;
+  padding: 9%;
+  position: absolute;
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+}
+.skduo-product-card:hover .skduo-product-card__media {
+  box-shadow: 0 22px 50px color-mix(in srgb, var(--color-ink) 10%, transparent);
+}
+.skduo-product-card:hover .skduo-product-card__image {
+  transform: scale(1.05);
+}
+.skduo-product-card:focus-within {
+  border-radius: 20px;
+  outline: 2px solid var(--color-green-deep);
+  outline-offset: 6px;
+}
+.skduo-product-card__action {
+  align-items: center;
+  background: var(--color-ink);
+  border-radius: 9999px;
+  bottom: 0.65rem;
+  color: var(--color-paper);
+  display: flex;
+  font-size: 0.6rem;
+  font-weight: 800;
+  gap: 0.5rem;
+  justify-content: space-between;
+  left: 0.65rem;
+  letter-spacing: 0.12em;
+  padding: 0.3rem 0.3rem 0.3rem 0.95rem;
+  pointer-events: none;
+  position: absolute;
+  right: 0.65rem;
+  text-transform: uppercase;
+  transition: opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1), transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.skduo-product-card__action-icon {
+  align-items: center;
+  background: var(--color-green-mint);
+  border-radius: 9999px;
+  color: var(--color-ink);
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 1.85rem;
+  justify-content: center;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 1.85rem;
+}
+@media (hover: hover) {
+  .skduo-product-card__action {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  .skduo-product-card:hover .skduo-product-card__action,
+  .skduo-product-card:focus-within .skduo-product-card__action {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .skduo-product-card:hover .skduo-product-card__action-icon {
+    transform: translateX(2px);
+  }
+}
+@media (hover: none) {
+  .skduo-product-card__action { display: none; }
+}
+
+/* Single product: gallery */
+.skduo-product-gallery__stage img {
+  mix-blend-mode: multiply;
+}
+.skduo-product-thumb {
+  aspect-ratio: 1;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+  width: 4.5rem;
+}
+.skduo-product-thumb img { mix-blend-mode: multiply; }
+.skduo-product-thumb:hover { border-color: color-mix(in srgb, var(--color-ink) 30%, transparent); }
+.skduo-product-thumb[aria-pressed="true"] { border-color: var(--color-ink); }
+.skduo-product-thumb:focus-visible {
+  outline: 2px solid var(--color-green-deep);
+  outline-offset: 2px;
+}
+
+/* Single product: notices from woocommerce_before_single_product */
+.skduo-product-notices:empty { display: none; }
+.skduo-product-notices .woocommerce-message,
+.skduo-product-notices .woocommerce-info,
+.skduo-product-notices .woocommerce-error {
+  align-items: center;
+  border-radius: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  justify-content: space-between;
+}
+.skduo-product-notices .woocommerce-message .button {
+  order: 2;
+}
+
+/* Single product: buy area (simple, variable, grouped) */
+.skduo-product-cta {
+  align-items: center;
+  background: var(--color-green-deep);
+  border-radius: 9999px;
+  color: var(--color-paper);
+  display: inline-flex;
+  font-size: 0.75rem;
+  font-weight: 800;
+  gap: 1rem;
+  justify-content: space-between;
+  letter-spacing: 0.14em;
+  min-height: 3.5rem;
+  padding: 0.35rem 0.35rem 0.35rem 1.6rem;
+  text-transform: uppercase;
+  transition: background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .skduo-product-cta { min-width: 20rem; width: auto; }
+}
+.skduo-product-cta__icon {
+  align-items: center;
+  background: color-mix(in srgb, var(--color-paper) 14%, transparent);
+  border-radius: 9999px;
+  display: inline-flex;
+  height: 2.75rem;
+  justify-content: center;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 2.75rem;
+}
+.skduo-product-cta:hover { background: var(--color-ink); }
+.skduo-product-cta:hover .skduo-product-cta__icon { transform: translate(2px, -2px); }
+.skduo-product-cta:active { transform: scale(0.99); }
+.skduo-product-cta:focus-visible {
+  outline: 2px solid var(--color-green-deep);
+  outline-offset: 3px;
+}
+
+.skduo-product-buy form.cart {
+  align-items: stretch;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.6rem;
+}
+.skduo-product-buy form.variations_form,
+.skduo-product-buy form.grouped_form {
+  display: block;
+}
+.skduo-product-buy .woocommerce-variation-add-to-cart,
+.skduo-product-buy form.grouped_form > .single_add_to_cart_button {
+  margin-top: 1.25rem;
+}
+.skduo-product-buy .woocommerce-variation-add-to-cart {
+  display: flex;
+  gap: 0.6rem;
+}
+.skduo-product-buy .quantity {
+  flex-shrink: 0;
+}
+.skduo-product-buy .quantity input.qty {
+  -moz-appearance: textfield;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  height: 3.5rem;
+  text-align: center;
+  width: 5rem;
+}
+.skduo-product-buy .single_add_to_cart_button {
+  background: var(--color-green-deep);
+  border-radius: 9999px;
+  color: var(--color-paper);
+  cursor: pointer;
+  flex: 1 1 auto;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  min-height: 3.5rem;
+  padding: 0 1.5rem;
+  text-transform: uppercase;
+  transition: background-color 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 0.2s ease;
+}
+.skduo-product-buy .single_add_to_cart_button:hover { background: var(--color-ink); }
+.skduo-product-buy .single_add_to_cart_button:active { transform: scale(0.99); }
+.skduo-product-buy .single_add_to_cart_button.disabled,
+.skduo-product-buy .single_add_to_cart_button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+.skduo-product-buy :is(.quantity input, .single_add_to_cart_button, select):focus-visible {
+  outline: 2px solid var(--color-green-deep);
+  outline-offset: 2px;
+}
+
+/* Variations: table reset to stacked rows; selects replaced by pills in productVariations.js */
+.skduo-product-buy table.variations,
+.skduo-product-buy table.variations tbody {
+  border-collapse: collapse;
+  display: block;
+  width: 100%;
+}
+.skduo-product-buy table.variations tr {
+  display: grid;
+  gap: 0.6rem;
+  margin-bottom: 1.15rem;
+}
+.skduo-product-buy table.variations :is(th, td) {
+  padding: 0;
+  text-align: left;
+}
+.skduo-product-buy table.variations th,
+.skduo-product-buy table.variations label {
+  color: color-mix(in srgb, var(--color-ink) 62%, transparent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.skduo-product-buy table.variations select {
+  appearance: none;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%230A1518' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E") no-repeat right 1.1rem center;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  border-radius: 9999px;
+  font-weight: 600;
+  min-height: 3rem;
+  padding: 0 2.75rem 0 1.25rem;
+  width: 100%;
+}
+.skduo-product-buy table.variations select.skduo-variation-select {
+  clip: rect(0 0 0 0);
+  height: 1px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+.skduo-variation-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.skduo-variation-pill {
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 15%, transparent);
+  border-radius: 9999px;
+  color: var(--color-ink);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-height: 2.5rem;
+  min-width: 2.75rem;
+  padding: 0 1rem;
+  transition: background-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s cubic-bezier(0.22, 1, 0.36, 1), color 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.skduo-variation-pill:hover:not(:disabled) { border-color: var(--color-ink); }
+.skduo-variation-pill[aria-pressed="true"] {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-paper);
+}
+.skduo-variation-pill:disabled {
+  color: color-mix(in srgb, var(--color-ink) 35%, transparent);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+.skduo-variation-pill:focus-visible {
+  outline: 2px solid var(--color-green-deep);
+  outline-offset: 2px;
+}
+.skduo-product-buy .reset_variations {
+  color: color-mix(in srgb, var(--color-ink) 62%, transparent);
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-top: 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.skduo-product-buy .woocommerce-variation-price .price {
+  color: var(--color-green-deep);
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+}
+.skduo-product-buy .stock {
+  color: var(--color-green-deep);
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  width: 100%;
+}
+.skduo-product-buy .stock.out-of-stock {
+  color: color-mix(in srgb, var(--color-ink) 62%, transparent);
+}
+
+/* Grouped products table */
+.skduo-product-buy table.group_table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.skduo-product-buy table.group_table td {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  font-size: 0.9rem;
+  padding: 0.75rem 0.5rem 0.75rem 0;
+  vertical-align: middle;
+}
+.skduo-product-buy table.group_table .quantity input.qty { height: 2.75rem; width: 4.25rem; }
+.skduo-product-buy table.group_table a { font-weight: 700; }
+.skduo-product-buy table.group_table .woocommerce-grouped-product-list-item__price {
+  color: var(--color-green-deep);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  text-align: right;
+}
+
+/* Additional information (wc_display_product_attributes) */
+.skduo-product-attributes table {
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  width: 100%;
+}
+.skduo-product-attributes :is(th, td) {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  padding: 0.8rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+.skduo-product-attributes th {
+  color: color-mix(in srgb, var(--color-ink) 62%, transparent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  padding-right: 1.5rem;
+  text-transform: uppercase;
+  width: 38%;
+}
+.skduo-product-attributes td p { margin: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .skduo-product-card__image,
+  .skduo-product-card__action,
+  .skduo-product-card__action-icon,
+  .skduo-product-cta__icon { transition: none; }
+  .skduo-product-card:hover .skduo-product-card__image { transform: none; }
 }

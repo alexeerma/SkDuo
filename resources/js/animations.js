@@ -13,8 +13,8 @@
  *   [data-training-modal-open]   Any element that opens the training modal
  *   [data-training-modal-close]  Any element that closes the training modal
  *   [data-noored-slider]         Sidebar image slider, auto-advances every 4s (/noored Lisainfo card)
- *   [data-training-group-filter] Filters [data-training-group-card] by coach name (/noored)
- *   [data-training-group-card]   Smooth open/close animation, driven by data-state (/noored)
+ *   [data-coach-grid]            Coach cards + one full-width detail panel at a time (/noored)
+ *   [data-coach-filter]          Filters [data-coach-card] by coach name (/noored)
  */
 
 // Coalesces a high-frequency handler (mousemove/pointermove) to at most one
@@ -350,76 +350,77 @@ export default function initAnimations() {
     }, 4000);
   });
 
-  // ===== 9. Training group coach filter (/noored) =====
-  document.querySelectorAll('[data-training-group-filter]').forEach((input) => {
-    const list = input.closest('section')?.querySelector('[data-training-group-list]');
-    const empty = input.closest('section')?.querySelector('[data-training-group-empty]');
-    const cards = list ? Array.from(list.querySelectorAll('[data-training-group-card]')) : [];
+  // ===== 9. Coach cards + full-width detail panel (/noored) =====
+  // Each card is followed by its panel (grid-column: 1 / -1). The grid uses
+  // `grid-auto-flow: row dense`, so the open panel drops below the clicked
+  // card's row and later cards backfill it. Only one coach is open at a time.
+  document.querySelectorAll('[data-coach-grid]').forEach((grid) => {
+    const section = grid.closest('section');
+    const filter = section?.querySelector('[data-coach-filter]');
+    const empty = section?.querySelector('[data-coach-empty]');
+    const cards = Array.from(grid.querySelectorAll('[data-coach-card]'));
     if (!cards.length) return;
 
-    input.addEventListener('input', () => {
-      const query = input.value.trim().toLowerCase();
-      let visibleCount = 0;
+    const parts = (card) => {
+      const toggle = card.querySelector('[data-coach-toggle]');
+      const panel = toggle ? document.getElementById(toggle.getAttribute('aria-controls')) : null;
+      return { toggle, panel };
+    };
 
-      cards.forEach((card) => {
-        const isMatch = !query || (card.dataset.coachName || '').includes(query);
-        card.classList.toggle('hidden', !isMatch);
-        if (isMatch) visibleCount += 1;
+    const close = (card, restoreFocus = false) => {
+      const { toggle, panel } = parts(card);
+      if (!toggle || !panel) return;
+      card.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      panel.hidden = true;
+      if (restoreFocus) toggle.focus();
+    };
+
+    const open = (card) => {
+      cards.forEach((other) => { if (other !== card) close(other); });
+      const { toggle, panel } = parts(card);
+      if (!toggle || !panel) return;
+      card.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+      panel.hidden = false;
+    };
+
+    const toggleCard = (card) => {
+      if (card.classList.contains('is-open')) close(card);
+      else open(card);
+    };
+
+    cards.forEach((card) => {
+      const { toggle } = parts(card);
+      if (!toggle) return;
+      toggle.addEventListener('click', () => toggleCard(card));
+      // Whole card is a pointer target; the button stays the accessible control.
+      card.addEventListener('click', (event) => {
+        if (event.target.closest('[data-coach-toggle], a')) return;
+        toggleCard(card);
       });
-
-      if (empty) empty.classList.toggle('hidden', visibleCount !== 0);
     });
-  });
 
-  // ===== 10. Training group card smooth open/close (/noored) =====
-  // `data-state` (not the native `open` attribute) drives all visual transitions
-  // (icon rotation, border/shadow) so they stay in sync with the JS height
-  // animation instead of snapping in with the native, un-animatable toggle.
-  const prefersReducedMotionDetails = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.querySelectorAll('[data-training-group-card]').forEach((card) => {
-    const summary = card.querySelector('summary');
-    const body = card.querySelector('[data-training-group-body]');
-    if (!summary || !body) return;
+    grid.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const openCard = cards.find((card) => card.classList.contains('is-open'));
+      if (openCard) close(openCard, true);
+    });
 
-    // Reduced motion: keep the native instant toggle, just sync data-state for styling.
-    if (prefersReducedMotionDetails) {
-      card.addEventListener('toggle', () => {
-        card.dataset.state = card.open ? 'open' : 'closed';
+    if (filter) {
+      filter.addEventListener('input', () => {
+        const query = filter.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const isMatch = !query || (card.dataset.coachName || '').includes(query);
+          if (!isMatch) close(card);
+          card.classList.toggle('hidden', !isMatch);
+          if (isMatch) visibleCount += 1;
+        });
+
+        if (empty) empty.classList.toggle('hidden', visibleCount !== 0);
       });
-      return;
     }
-
-    let animation = null;
-
-    summary.addEventListener('click', (event) => {
-      event.preventDefault();
-      if (animation) return;
-
-      if (card.open) {
-        const startHeight = body.offsetHeight;
-        card.dataset.state = 'closed';
-        animation = body.animate(
-          { height: [`${startHeight}px`, '0px'] },
-          { duration: 260, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' }
-        );
-        animation.onfinish = () => {
-          card.open = false;
-          body.style.height = '';
-          animation = null;
-        };
-      } else {
-        card.open = true;
-        card.dataset.state = 'open';
-        const endHeight = body.scrollHeight;
-        animation = body.animate(
-          { height: ['0px', `${endHeight}px`] },
-          { duration: 260, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' }
-        );
-        animation.onfinish = () => {
-          body.style.height = '';
-          animation = null;
-        };
-      }
-    });
   });
 }

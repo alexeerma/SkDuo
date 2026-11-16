@@ -10,6 +10,18 @@ document.addEventListener('DOMContentLoaded', () => {
   initAnimations();
   initProductArchive();
 
+  if (document.querySelector('[data-product-gallery-thumb]')) {
+    import('./productGallery.js').then(({ default: initProductGallery }) => initProductGallery());
+  }
+
+  if (document.querySelector('form.variations_form')) {
+    import('./productVariations.js').then(({ default: initProductVariations }) => initProductVariations());
+  }
+
+  if (document.querySelector('[data-calendar-tabs]')) {
+    import('./calendarTabs.js').then(({ default: initCalendarTabs }) => initCalendarTabs());
+  }
+
   if (document.querySelector('[data-rally-canvas]')) {
     import('./rally3d.js').then(({ default: initRally3D }) => initRally3D());
   }

@@ -60,5 +60,11 @@ add_filter('template_include', function ($template) {
         return get_template_directory() . '/index.php';
     }
 
+    if (function_exists('is_product') && is_product()) {
+        app()['sage.view'] = 'single-product';
+
+        return get_template_directory() . '/index.php';
+    }
+
     return $template;
 }, 101);

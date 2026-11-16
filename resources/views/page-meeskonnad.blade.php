@@ -5,6 +5,8 @@
 
 @php
   $teams = skduo_get_teams_with_players();
+  // Hide teams without any players (across all seasons) on the frontend.
+  $visibleTeams = array_values(array_filter($teams, fn ($team) => ! empty($team->players)));
   $meeskonnadHeroImage = function_exists('skduo_get_meeskonnad_hero_image') ? skduo_get_meeskonnad_hero_image() : '';
   $accentClasses = [
     'green-deep' => 'bg-green-deep text-paper',
@@ -19,7 +21,7 @@
       <div class="flex flex-col justify-center px-4 py-14 sm:px-6 md:px-12 md:py-20">
         <span class="inline-flex items-center gap-2 text-green-deep text-xs font-extrabold uppercase tracking-widest mb-5">
           <span class="w-8 h-0.5 bg-green-deep"></span>
-          Meeskonnad
+          Võistkonnad
         </span>
 
         <h1 class="max-w-4xl font-display text-5xl leading-[0.88] tracking-wide sm:text-6xl md:text-8xl">
@@ -31,22 +33,16 @@
         </p>
       </div>
 
-      <div class="relative flex flex-col justify-between overflow-hidden bg-hero-dark px-4 py-10 text-paper sm:px-6 md:px-12 md:py-12">
-        @if($meeskonnadHeroImage)
-          <div class="absolute inset-0 z-0 opacity-70">
-            <img src="{{ esc_url($meeskonnadHeroImage) }}" alt="" class="h-full w-full object-cover grayscale contrast-110 saturate-75" loading="lazy">
-          </div>
-          <div class="absolute inset-0 z-[1] bg-[var(--skduo-hero-bg)]/82"></div>
-        @endif
-        <div class="absolute -right-24 -top-24 z-[2] h-72 w-72 rounded-full bg-green-mint/10 animate-float"></div>
-
-        <div class="relative z-10 mt-12">
-          <div class="text-xs font-extrabold uppercase tracking-widest text-green-mint mb-3">Klubi loogika</div>
-          <p class="text-2xl md:text-3xl font-display leading-none tracking-wide">
-            Üks klubi. Mitu teekonda. Sama Tartu energia.
-          </p>
+      @if($meeskonnadHeroImage)
+        <div class="relative min-h-[280px] overflow-hidden bg-hero-dark sm:min-h-[360px] lg:min-h-0">
+          <img src="{{ esc_url($meeskonnadHeroImage) }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy">
+          <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-green-deep/45 to-transparent"></div>
         </div>
-      </div>
+      @else
+        <div class="relative hidden overflow-hidden bg-hero-dark lg:block" aria-hidden="true">
+          <div class="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-green-mint/10 animate-float"></div>
+        </div>
+      @endif
     </div>
   </section>
 
@@ -66,18 +62,18 @@
       </div>
     @else
       <div class="space-y-16">
-      @foreach($teams as $team)
+      @foreach($visibleTeams as $team)
         <section data-reveal data-team-roster>
           <div class="mb-6 grid gap-5 border-t border-ink/10 pt-7 lg:grid-cols-[0.75fr_1.25fr] lg:items-end">
             <div>
               <div class="mb-3 flex flex-wrap items-center gap-2">
                 @if($team->level)
-                  <span class="{{ $accentClasses[$team->accent] ?? $accentClasses['green-deep'] }} px-3 py-1.5 text-[0.62rem] font-extrabold uppercase tracking-widest">
+                  <span class="skduo-team-pill border-transparent {{ $accentClasses[$team->accent] ?? $accentClasses['green-deep'] }}">
                     {{ $team->level }}
                   </span>
                 @endif
                 @if($team->league)
-                  <span class="border border-ink/15 px-3 py-1.5 text-[0.62rem] font-extrabold uppercase tracking-widest text-ink/60">
+                  <span class="skduo-team-pill border-ink/15 text-ink/60">
                     {{ $team->league }}
                   </span>
                 @endif
@@ -89,7 +85,7 @@
                   <div class="skduo-season-picker relative" data-season-picker>
                     <button
                       type="button"
-                      class="skduo-season-picker__trigger"
+                      class="skduo-team-pill skduo-season-picker__trigger"
                       aria-expanded="false"
                       aria-label="{{ esc_attr($team->name . ' hooaja filter') }}"
                       data-season-trigger
@@ -120,40 +116,28 @@
             @endif
           </div>
 
-          @if(empty($team->players) && empty($team->staff ?? []))
-            <div class="border border-dashed border-ink/20 p-6 text-sm font-bold uppercase tracking-widest text-ink/62">
-              Mängijaid pole veel lisatud.
-            </div>
-          @else
-            @if(! empty($team->players))
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            @foreach($team->players as $player)
+              <x-player-card :player="$player" />
+            @endforeach
+          </div>
+
+          <div class="skduo-season-empty mt-4 hidden border border-dashed border-ink/20 p-6 text-sm font-bold uppercase tracking-widest text-ink/62">
+            Selle hooaja mängijaid pole veel lisatud.
+          </div>
+
+          @if(! empty($team->staff))
+            <div class="mt-10">
+              <div class="mb-4 flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-ink/62">
+                <span class="h-0.5 w-6 bg-ink/20"></span>
+                Treenerid ja personal
+              </div>
               <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                @foreach($team->players as $player)
-                  <x-player-card :player="$player" />
+                @foreach($team->staff as $member)
+                  <x-player-card :player="$member" :show-stats="false" />
                 @endforeach
               </div>
-            @else
-              <div class="border border-dashed border-ink/20 p-6 text-sm font-bold uppercase tracking-widest text-ink/62">
-                Mängijaid pole veel lisatud.
-              </div>
-            @endif
-
-            <div class="skduo-season-empty mt-4 hidden border border-dashed border-ink/20 p-6 text-sm font-bold uppercase tracking-widest text-ink/62">
-              Selle hooaja mängijaid pole veel lisatud.
             </div>
-
-            @if(! empty($team->staff))
-              <div class="mt-10">
-                <div class="mb-4 flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-ink/62">
-                  <span class="h-0.5 w-6 bg-ink/20"></span>
-                  Treenerid ja personal
-                </div>
-                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  @foreach($team->staff as $member)
-                    <x-player-card :player="$member" :show-stats="false" />
-                  @endforeach
-                </div>
-              </div>
-            @endif
           @endif
         </section>
       @endforeach
