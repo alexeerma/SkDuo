@@ -185,7 +185,7 @@
           @php
             $coachPanelId = 'coach-panel-' . $loop->index;
             $groupCount = count($group['groups']);
-            $contact = $group['contact'] ?? [];
+            $contact = function_exists('skduo_noored_coach_contact') ? skduo_noored_coach_contact($group['contact'] ?? []) : ($group['contact'] ?? []);
             $hasContact = ! empty($contact['phone']) || ! empty($contact['email']) || ! empty($contact['extra']);
           @endphp
           <article class="skduo-coach-card" data-coach-card data-coach-name="{{ esc_attr(mb_strtolower($group['coach'])) }}">
@@ -236,16 +236,16 @@
                     Kontakt
                   </p>
                   <ul class="space-y-2 text-sm leading-relaxed">
-                    @if(! empty($contact['phone']))
+                    @if(! empty($contact['phone']) && ! empty($contact['phone_href']))
                       <li>
                         <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/62">Telefon</span>
-                        <a href="{{ esc_attr($contact['phone_href']) }}" class="skduo-coach-panel__link">{{ $contact['phone'] }}</a>
+                        <a href="{{ esc_url($contact['phone_href'], ['tel']) }}" class="skduo-coach-panel__link">{{ $contact['phone'] }}</a>
                       </li>
                     @endif
                     @if(! empty($contact['email']))
                       <li>
                         <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/62">E-post</span>
-                        <a href="mailto:{{ esc_attr($contact['email']) }}" class="skduo-coach-panel__link">{{ $contact['email'] }}</a>
+                        <a href="{{ esc_url($contact['email_href'] ?? 'mailto:' . $contact['email'], ['mailto']) }}" class="skduo-coach-panel__link">{{ $contact['email'] }}</a>
                       </li>
                     @endif
                     @foreach($contact['extra'] ?? [] as $line)

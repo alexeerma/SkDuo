@@ -221,6 +221,15 @@ function skduo_render_noored_options_page(): void {
 			: '';
 		update_option( 'skduo_noored_sidebar_images', $sidebar_image_ids, false );
 
+		$default_coach_phone = isset( $_POST['skduo_noored_default_coach_phone'] )
+			? skduo_sanitize_noored_phone( sanitize_text_field( wp_unslash( $_POST['skduo_noored_default_coach_phone'] ) ) )
+			: '';
+		$default_coach_email = isset( $_POST['skduo_noored_default_coach_email'] )
+			? sanitize_email( wp_unslash( $_POST['skduo_noored_default_coach_email'] ) )
+			: '';
+		update_option( 'skduo_noored_default_coach_phone', $default_coach_phone, false );
+		update_option( 'skduo_noored_default_coach_email', is_email( $default_coach_email ) ? $default_coach_email : '', false );
+
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Noored page options saved.', 'skduo' ) . '</p></div>';
 	}
 
@@ -251,6 +260,20 @@ function skduo_render_noored_options_page(): void {
 							</td>
 						</tr>
 					<?php endforeach; ?>
+					<tr>
+						<th scope="row"><label for="skduo_noored_default_coach_phone"><?php echo esc_html__( 'Vaikimisi treeneri telefon', 'skduo' ); ?></label></th>
+						<td>
+							<input type="text" id="skduo_noored_default_coach_phone" name="skduo_noored_default_coach_phone" value="<?php echo esc_attr( (string) get_option( 'skduo_noored_default_coach_phone', '' ) ); ?>" class="regular-text" inputmode="tel" />
+							<p class="description"><?php echo esc_html__( 'Kasutatakse treeneri paneelis, kui treeneril pole telefoni.', 'skduo' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="skduo_noored_default_coach_email"><?php echo esc_html__( 'Vaikimisi treeneri e-post', 'skduo' ); ?></label></th>
+						<td>
+							<input type="email" id="skduo_noored_default_coach_email" name="skduo_noored_default_coach_email" value="<?php echo esc_attr( (string) get_option( 'skduo_noored_default_coach_email', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php echo esc_html__( 'Kasutatakse treeneri paneelis, kui treeneril pole e-posti.', 'skduo' ); ?></p>
+						</td>
+					</tr>
 					<tr>
 						<th scope="row"><?php echo esc_html__( 'Lisainfo külgriba pildid', 'skduo' ); ?></th>
 						<td>
@@ -336,6 +359,41 @@ function skduo_print_noored_sidebar_image_picker_script(): void {
 	})(jQuery);
 	</script>
 	<?php
+}
+
+/**
+ * Phone input: keep digits, "+" and spaces only, collapse repeated spaces.
+ */
+function skduo_sanitize_noored_phone( string $value ): string {
+	return trim( (string) preg_replace( '/ {2,}/', ' ', (string) preg_replace( '/[^\d+ ]/', '', $value ) ) );
+}
+
+/**
+ * Coach panel contact: fill an empty phone/email (each separately) from the club-wide defaults
+ * and build phone_href (tel:) and email_href (mailto:).
+ */
+function skduo_noored_coach_contact( array $contact ): array {
+	$phone = trim( (string) ( $contact['phone'] ?? '' ) );
+	$email = trim( (string) ( $contact['email'] ?? '' ) );
+
+	if ( '' === $phone ) {
+		$phone = skduo_sanitize_noored_phone( (string) get_option( 'skduo_noored_default_coach_phone', '' ) );
+	}
+	if ( '' === $email ) {
+		$default_email = sanitize_email( (string) get_option( 'skduo_noored_default_coach_email', '' ) );
+		$email         = is_email( $default_email ) ? $default_email : '';
+	}
+
+	$phone_digits = preg_replace( '/[^\d+]/', '', $phone );
+	$phone_digits = ( '+' === substr( $phone_digits, 0, 1 ) ? '+' : '' ) . str_replace( '+', '', $phone_digits );
+
+	$contact['phone']      = $phone;
+	$contact['phone_href'] = '' !== str_replace( '+', '', $phone_digits ) ? 'tel:' . $phone_digits : '';
+	$contact['email']      = $email;
+	$contact['email_href'] = '' !== $email ? 'mailto:' . $email : '';
+	$contact['extra']      = is_array( $contact['extra'] ?? null ) ? $contact['extra'] : [];
+
+	return $contact;
 }
 
 function skduo_sanitize_noored_form_embed( string $value ): string {
