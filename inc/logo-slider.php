@@ -25,6 +25,7 @@ function skduo_get_logo_slider_items(): array {
 			'name' => '' !== $name ? $name : sprintf( __( 'Partner %d', 'skduo' ), $i ),
 			'logo' => $logo,
 			'url'  => $link,
+			'size' => skduo_logo_slider_image_size( absint( attachment_url_to_postid( $logo ) ), $logo ),
 		];
 	}
 
@@ -51,10 +52,36 @@ function skduo_get_logo_slider_items(): array {
 			'name' => get_the_title( $sponsor ),
 			'logo' => $logo,
 			'url'  => (string) get_post_meta( $sponsor->ID, '_website', true ),
+			'size' => skduo_logo_slider_image_size( (int) get_post_thumbnail_id( $sponsor ), $logo ),
 		];
 	}
 
 	return $items;
+}
+
+/**
+ * Intrinsic width/height of a logo URL, so the <img> gets size attributes (avoids layout shift).
+ *
+ * @return int[] [width, height] or [] when unknown.
+ */
+function skduo_logo_slider_image_size( int $attachment_id, string $url ): array {
+	if ( ! $attachment_id ) {
+		return [];
+	}
+
+	$meta = wp_get_attachment_metadata( $attachment_id );
+	if ( ! is_array( $meta ) || empty( $meta['width'] ) || empty( $meta['height'] ) ) {
+		return [];
+	}
+
+	$file = wp_basename( (string) wp_parse_url( $url, PHP_URL_PATH ) );
+	foreach ( (array) ( $meta['sizes'] ?? [] ) as $size ) {
+		if ( isset( $size['file'], $size['width'], $size['height'] ) && $size['file'] === $file ) {
+			return [ (int) $size['width'], (int) $size['height'] ];
+		}
+	}
+
+	return [ (int) $meta['width'], (int) $meta['height'] ];
 }
 
 function skduo_get_footer_logo_slider_title(): string {
@@ -123,7 +150,8 @@ function skduo_render_logo_slider( array $args = [] ): string {
 							<div class="skduo-logo-slider__item" aria-label="<?php echo esc_attr( $name ); ?>">
 						<?php endif; ?>
 
-							<img src="<?php echo esc_url( (string) $item['logo'] ); ?>" alt="<?php echo esc_attr( $name ); ?>" loading="lazy">
+							<?php $size = $item['size'] ?? []; ?>
+							<img src="<?php echo esc_url( (string) $item['logo'] ); ?>" alt="<?php echo esc_attr( $name ); ?>"<?php if ( 2 === count( $size ) ) : ?> width="<?php echo esc_attr( (string) $size[0] ); ?>" height="<?php echo esc_attr( (string) $size[1] ); ?>"<?php endif; ?> loading="lazy" decoding="async">
 
 						<?php if ( '' !== $link ) : ?>
 							</a>

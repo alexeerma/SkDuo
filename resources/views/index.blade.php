@@ -77,7 +77,11 @@
 
               $postCategories = get_the_category();
               $category = ! empty($postCategories) ? $postCategories[0]->name : __('Uudis', 'skduo');
-              $image = get_the_post_thumbnail_url(get_the_ID(), 'large');
+              $image = get_the_post_thumbnail(get_the_ID(), 'large', [
+                'alt' => get_the_title(),
+                'class' => 'h-full w-full mx-auto object-cover opacity-82 transition duration-500 group-hover:scale-105',
+                'sizes' => '(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw',
+              ]);
               $excerpt = wp_trim_words(
                 wp_strip_all_tags(strip_shortcodes(get_the_excerpt() ?: get_the_content(null, false))),
                 20,
@@ -89,7 +93,7 @@
               <a href="{{ esc_url(get_permalink()) }}" class="block">
                 <div class="relative aspect-[4/3] overflow-hidden bg-ink">
                   @if($image)
-                    <img src="{{ esc_url($image) }}" alt="{{ esc_attr(get_the_title()) }}" class="h-full w-full mx-auto object-cover opacity-82 transition duration-500 group-hover:scale-105">
+                    {!! $image !!}
                   @else
                     <div class="h-full w-full bg-card-fallback" style="--fallback-pos: 28% 20%; --fallback-opacity: 24%"></div>
                   @endif
