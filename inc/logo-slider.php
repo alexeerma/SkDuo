@@ -131,9 +131,11 @@ function skduo_render_logo_slider( array $args = [] ): string {
 
 			<div class="skduo-logo-slider__viewport" style="--skduo-logo-count: <?php echo esc_attr( (string) max( 1, $logo_count ) ); ?>">
 				<div class="skduo-logo-slider__track<?php echo $logo_count > 1 ? '' : ' skduo-logo-slider__track--static'; ?>">
-					<?php foreach ( $track_items as $item ) : ?>
+					<?php foreach ( $track_items as $index => $item ) : ?>
 						<?php
 						$name = (string) $item['name'];
+						// Second half of the track is a visual loop duplicate: hide it from AT and the tab order.
+						$is_copy = $logo_count > 1 && $index >= $logo_count;
 						$link = trim( (string) $item['url'] );
 						$host = '' !== $link ? parse_url( $link, PHP_URL_HOST ) : '';
 						$home_host = parse_url( home_url( '/' ), PHP_URL_HOST );
@@ -143,11 +145,11 @@ function skduo_render_logo_slider( array $args = [] ): string {
 							<a
 								href="<?php echo esc_url( $link ); ?>"
 								class="skduo-logo-slider__item"
-								aria-label="<?php echo esc_attr( $name ); ?>"
 								<?php if ( $is_external ) : ?>target="_blank" rel="noopener"<?php endif; ?>
+								<?php if ( $is_copy ) : ?>aria-hidden="true" tabindex="-1"<?php endif; ?>
 							>
 						<?php else : ?>
-							<div class="skduo-logo-slider__item" aria-label="<?php echo esc_attr( $name ); ?>">
+							<div class="skduo-logo-slider__item"<?php if ( $is_copy ) : ?> aria-hidden="true"<?php endif; ?>>
 						<?php endif; ?>
 
 							<?php $size = $item['size'] ?? []; ?>

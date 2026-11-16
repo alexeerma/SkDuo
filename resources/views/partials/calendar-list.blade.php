@@ -95,13 +95,13 @@
               class="inline-flex items-center gap-2.5 rounded-full border border-ink/15 px-5 py-2.5 text-xs font-extrabold uppercase tracking-[0.16em] text-ink/62 transition hover:border-green-deep hover:text-green-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-deep aria-selected:border-green-deep aria-selected:bg-green-deep aria-selected:text-paper"
             >
               {{ $tab['label'] }}
-              <span class="font-display text-base leading-none tracking-wide opacity-70">{{ $tab['count'] }}</span>
+              <span class="font-display text-base leading-none tracking-wide">{{ $tab['count'] }}</span>
             </button>
           @endforeach
         </div>
 
         @foreach($tabs as $key => $tab)
-          <div role="tabpanel" id="kalender-panel-{{ $key }}" aria-labelledby="kalender-tab-{{ $key }}" data-calendar-panel="{{ $key }}" class="mb-14 last:mb-0">
+          <div role="tabpanel" tabindex="0" id="kalender-panel-{{ $key }}" aria-labelledby="kalender-tab-{{ $key }}" data-calendar-panel="{{ $key }}" class="mb-14 last:mb-0">
             @if(! empty($tab['months']))
               <div class="space-y-14">
                 @foreach($tab['months'] as $month)

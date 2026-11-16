@@ -48,7 +48,7 @@
         <div>
           <h1 class="skduo-hero-title font-serif-display max-w-5xl text-[clamp(3rem,16vw,7.2rem)] leading-[1.1] tracking-normal">
             <span class="skduo-hero-title__line">{{ $hero->title_line_1 }}</span>
-            <span class="skduo-hero-title__line">{{ $hero->title_line_2 }} <em class="text-green-mint">{{ $hero->title_emphasis }}</em><span class="text-paper/30">—</span></span>
+            <span class="skduo-hero-title__line">{{ $hero->title_line_2 }} <em class="text-green-mint">{{ $hero->title_emphasis }}</em><span class="text-paper/30" aria-hidden="true">—</span></span>
           </h1>
 
           <div class="skduo-hero-copy mt-6">
@@ -79,7 +79,9 @@
           </div>
         </div>
 
-        <aside
+        <div
+          role="group"
+          aria-label="Järgmine mäng"
           class="skduo-hero-match-card border border-white/10 bg-white/8 p-4 backdrop-blur-md sm:p-5 xl:p-6"
           @if($nextMatch) data-countdown-target="{{ $nextMatch->date_ts }}" @endif
         >
@@ -123,7 +125,7 @@
                 href="{{ esc_url($nextMatch->permalink) }}"
                 class="block flex-1 rounded-full border border-white/20 px-4 py-3 text-center text-xs font-extrabold uppercase tracking-widest text-paper transition hover:border-green-mint hover:text-green-mint focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
               >
-                Info
+                Info<span class="sr-only">: {{ $nextMatch->home }} – {{ $nextMatch->away }}</span>
               </a>
               @if(! empty($nextMatch->free_entry))
                 <span class="block flex-1 rounded-full bg-lime px-4 py-3 text-center text-xs font-extrabold uppercase tracking-widest text-ink">
@@ -143,7 +145,7 @@
           @else
             <p class="border-y border-white/10 py-5 text-sm text-paper/65">Järgmine mäng peagi teada.</p>
           @endif
-        </aside>
+        </div>
       </div>
 
       <a href="#court" class="skduo-scroll-cue absolute bottom-7 left-1/2 z-20 hidden -translate-x-1/2 lg:inline-flex" aria-label="{{ esc_attr__('Scroll to the next section', 'skduo') }}">
@@ -174,7 +176,7 @@
           <p class="max-w-xl text-base leading-relaxed text-paper/72 md:text-lg">
             Skrolli läbi ralli: serv, vastuvõtt, tõste, rünnak ja kaitse liiguvad üle väljaku nagu päris mängus.
           </p>
-          <p class="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-paper/40">Scroll — jälgi palli trajektoori ↓</p>
+          <p class="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-paper/60">Scroll — jälgi palli trajektoori ↓</p>
         </div>
       </div>
     </div>
@@ -186,7 +188,7 @@
       class="relative h-[260vh]"
     >
       <div class="sticky top-0 h-screen overflow-hidden">
-        <canvas data-rally-canvas class="absolute inset-0 block h-full w-full"></canvas>
+        <canvas data-rally-canvas class="absolute inset-0 block h-full w-full" aria-hidden="true"></canvas>
 
         <div class="pointer-events-none absolute inset-x-0 bottom-[7vh] z-10 hidden items-end justify-between gap-8 px-8 md:flex md:px-12">
           <div>
@@ -248,7 +250,7 @@
               style="--glow-color: 111, 200, 181; --reveal-delay: {{ $loop->index * 90 }}ms;"
             >
               @if($post->image)
-                <img src="{{ esc_url($post->image) }}" alt="{{ esc_attr($post->title) }}" class="skduo-news-card__image absolute inset-0 h-full w-full object-cover opacity-22 grayscale saturate-75 transition duration-500 group-hover:scale-105 group-hover:opacity-30" loading="lazy">
+                <img src="{{ esc_url($post->image) }}" alt="" class="skduo-news-card__image absolute inset-0 h-full w-full object-cover opacity-22 grayscale saturate-75 transition duration-500 group-hover:scale-105 group-hover:opacity-30" loading="lazy">
                 <span class="absolute inset-0 bg-gradient-to-b from-[var(--skduo-section-dark)]/78 via-[var(--skduo-section-dark)]/62 to-[var(--skduo-section-dark)]/92"></span>
               @else
                 <span class="absolute inset-0 bg-card-fallback" style="--fallback-pos: 25% 10%; --fallback-opacity: 20%"></span>

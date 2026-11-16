@@ -21,7 +21,7 @@
 
       <section class="bg-paper px-4 pb-16 pt-6 text-ink sm:px-6 md:px-12 md:pb-24 md:pt-8">
         <div class="mx-auto max-w-[1360px]">
-          <nav aria-label="Leivapuru" class="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-ink/55 md:mb-8">
+          <nav aria-label="Leivapuru" class="mb-6 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.68rem] font-extrabold uppercase tracking-[0.14em] text-ink/62 md:mb-8">
             <a href="{{ esc_url($p->shopUrl) }}" class="rounded-sm transition-colors hover:text-green-deep focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-deep">{{ $p->shopTitle }}</a>
             @if($p->category)
               <span aria-hidden="true">/</span>
@@ -142,13 +142,13 @@
                 <dl class="mt-7 grid gap-2 text-xs">
                   @if($p->sku)
                     <div class="flex gap-3">
-                      <dt class="w-24 shrink-0 font-extrabold uppercase tracking-[0.14em] text-ink/55">Tootekood</dt>
+                      <dt class="w-24 shrink-0 font-extrabold uppercase tracking-[0.14em] text-ink/62">Tootekood</dt>
                       <dd class="font-semibold text-ink/80">{{ $p->sku }}</dd>
                     </div>
                   @endif
                   @if($p->categoryListHtml)
                     <div class="flex gap-3">
-                      <dt class="w-24 shrink-0 font-extrabold uppercase tracking-[0.14em] text-ink/55">Kategooria</dt>
+                      <dt class="w-24 shrink-0 font-extrabold uppercase tracking-[0.14em] text-ink/62">Kategooria</dt>
                       <dd class="font-semibold text-ink/80 [&_a]:underline [&_a]:decoration-ink/20 [&_a]:underline-offset-2 [&_a:hover]:text-green-deep">{!! wp_kses_post($p->categoryListHtml) !!}</dd>
                     </div>
                   @endif

@@ -56,7 +56,7 @@
         </div>
       </div>
 
-      <aside class="border border-white/10 bg-white/8 p-6 backdrop-blur-md">
+      <div class="border border-white/10 bg-white/8 p-6 backdrop-blur-md">
         <div class="text-xs font-extrabold uppercase tracking-[0.18em] text-green-mint">Hooajapilet</div>
         <h2 class="mt-4 font-serif-display text-4xl leading-none tracking-normal text-paper sm:text-5xl">
           {{ $pageOptions['info_title'] ?? 'Üks pilet. Terve hooaeg.' }}
@@ -64,7 +64,7 @@
         <p class="mt-5 text-sm font-semibold leading-relaxed text-paper/62">
           {{ $pageOptions['info_text'] ?? '' }}
         </p>
-      </aside>
+      </div>
     </div>
   </section>
 

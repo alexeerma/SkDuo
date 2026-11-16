@@ -54,7 +54,7 @@
 
         <div data-hero3d-accent-box class="pointer-events-none absolute left-1/2 top-1/2 hidden h-72 w-72 -translate-x-1/2 -translate-y-1/2 md:block lg:h-[30rem] lg:w-[30rem]">
           <div data-hero3d-accent-wrap class="h-full w-full">
-            <canvas data-hero3d-accent-canvas class="h-full w-full"></canvas>
+            <canvas data-hero3d-accent-canvas class="h-full w-full" aria-hidden="true"></canvas>
           </div>
         </div>
 
@@ -89,7 +89,7 @@
 
     <div data-rally-track class="relative h-[260vh]">
       <div class="sticky top-0 h-screen overflow-hidden">
-        <canvas data-rally-canvas class="absolute inset-0 block h-full w-full"></canvas>
+        <canvas data-rally-canvas class="absolute inset-0 block h-full w-full" aria-hidden="true"></canvas>
 
         <div class="pointer-events-none absolute inset-x-0 bottom-[7vh] z-10 hidden items-end justify-between gap-8 px-8 md:flex md:px-12">
           <div>

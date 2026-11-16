@@ -37,9 +37,36 @@ export default function initAnimations() {
   // Mobile menu scroll lock — functional, so it runs even under reduced motion.
   // `body:has(.skduo-mobile-menu[open])` in app.css covers browsers that support :has();
   // this class toggle is the fallback for browsers that don't.
+  // While the full-screen menu is open, everything behind it is made inert so
+  // keyboard and screen reader focus stays inside the menu.
+  const setMenuInert = (isOpen) => {
+    document.querySelectorAll('[data-menu-inert]').forEach((el) => {
+      el.inert = isOpen;
+    });
+  };
   document.querySelectorAll('.skduo-mobile-menu').forEach((menu) => {
     menu.addEventListener('toggle', () => {
       document.body.classList.toggle('is-menu-open', menu.open);
+      setMenuInert(menu.open);
+    });
+  });
+  // The menu is lg:hidden; if the viewport grows past it while open, close it.
+  window.matchMedia('(min-width: 1024px)').addEventListener('change', (event) => {
+    if (!event.matches) return;
+    document.querySelectorAll('.skduo-mobile-menu[open]').forEach((menu) => { menu.open = false; });
+  });
+
+  // Desktop nav dropdowns open on hover/focus-within; Escape dismisses them (WCAG 1.4.13)
+  // and returns focus to the parent link. They re-arm once pointer/focus leaves the item.
+  document.querySelectorAll('[data-nav-dropdown]').forEach((item) => {
+    item.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      item.classList.add('is-dismissed');
+      item.querySelector(':scope > a')?.focus();
+    });
+    item.addEventListener('pointerleave', () => item.classList.remove('is-dismissed'));
+    item.addEventListener('focusout', (event) => {
+      if (!item.contains(event.relatedTarget)) item.classList.remove('is-dismissed');
     });
   });
 
@@ -54,32 +81,191 @@ export default function initAnimations() {
 
   // Training sign-up modal — functional, so it runs even under reduced motion.
   // One modal per page; any [data-training-modal-open] button (hero CTA, /noored CTA, ...) opens it.
+  // Focus moves into the dialog, Tab is kept inside it, and focus returns to the opener on close.
   const trainingModal = document.querySelector('[data-training-modal]');
   const trainingOpenButtons = document.querySelectorAll('[data-training-modal-open]');
   if (trainingModal && trainingOpenButtons.length) {
-    const openTrainingModal = () => {
+    const dialog = trainingModal.querySelector('[role="dialog"]') || trainingModal;
+    const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])';
+    let lastOpener = null;
+    const isOpen = () => trainingModal.getAttribute('aria-hidden') === 'false';
+
+    const openTrainingModal = (event) => {
+      lastOpener = event?.currentTarget || document.activeElement;
       trainingModal.classList.remove('hidden');
       trainingModal.classList.add('flex');
       trainingModal.setAttribute('aria-hidden', 'false');
       document.documentElement.classList.add('overflow-hidden');
+      dialog.querySelector('button[data-training-modal-close]')?.focus();
     };
     const closeTrainingModal = () => {
       trainingModal.classList.add('hidden');
       trainingModal.classList.remove('flex');
       trainingModal.setAttribute('aria-hidden', 'true');
       document.documentElement.classList.remove('overflow-hidden');
+      if (lastOpener && document.contains(lastOpener)) lastOpener.focus();
+      lastOpener = null;
     };
+    // Safety net for the keydown trap: focus that lands outside the open dialog
+    // (e.g. leaving the embedded iframe) is sent back to the close button.
+    document.addEventListener('focusin', (event) => {
+      if (isOpen() && !dialog.contains(event.target)) {
+        dialog.querySelector('button[data-training-modal-close]')?.focus();
+      }
+    });
     trainingOpenButtons.forEach((button) => button.addEventListener('click', openTrainingModal));
     trainingModal.querySelectorAll('[data-training-modal-close]').forEach((button) => {
       button.addEventListener('click', closeTrainingModal);
     });
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && trainingModal.getAttribute('aria-hidden') === 'false') closeTrainingModal();
+      if (!isOpen()) return;
+      if (event.key === 'Escape') {
+        closeTrainingModal();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const focusables = [...dialog.querySelectorAll(focusableSelector)].filter((el) => el.offsetParent !== null || el === document.activeElement);
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+        event.preventDefault();
+        first.focus();
+      }
     });
   }
 
+  // Functional widgets (countdown, slider pause logic, coach panels) run before the
+  // reduced-motion early return below, so they keep working for those users.
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ===== 7. Live countdown =====
+  document.querySelectorAll('[data-countdown-target]').forEach((wrap) => {
+    const target = parseInt(wrap.dataset.countdownTarget, 10) * 1000;
+    const els = {
+      d: wrap.querySelector('[data-cd="d"]'),
+      h: wrap.querySelector('[data-cd="h"]'),
+      m: wrap.querySelector('[data-cd="m"]'),
+      s: wrap.querySelector('[data-cd="s"]'),
+    };
+    const tick = () => {
+      const diff = target - Date.now();
+      if (diff <= 0) { wrap.classList.add('is-live'); return; }
+      const dd = Math.floor(diff / 86400000);
+      const hh = Math.floor((diff % 86400000) / 3600000);
+      const mm = Math.floor((diff % 3600000) / 60000);
+      const ss = Math.floor((diff % 60000) / 1000);
+      if (els.d) els.d.textContent = String(dd).padStart(2, '0');
+      if (els.h) els.h.textContent = String(hh).padStart(2, '0');
+      if (els.m) els.m.textContent = String(mm).padStart(2, '0');
+      if (els.s) els.s.textContent = String(ss).padStart(2, '0');
+    };
+    tick();
+    setInterval(tick, 1000);
+  });
+
+  // ===== 8. Noored sidebar image slider (auto-advance) =====
+  // Off under reduced motion; pauses while hovered or focused (WCAG 2.2.2).
+  document.querySelectorAll('[data-noored-slider]').forEach((slider) => {
+    const track = slider.querySelector('[data-noored-slider-track]');
+    const slides = track ? track.children.length : 0;
+    if (!track || slides < 2 || prefersReducedMotion) return;
+
+    let index = 0;
+    let paused = false;
+    const pause = () => { paused = true; };
+    const resume = () => { paused = slider.matches(':hover') || slider.contains(document.activeElement); };
+    slider.addEventListener('pointerenter', pause);
+    slider.addEventListener('pointerleave', resume);
+    slider.addEventListener('focusin', pause);
+    slider.addEventListener('focusout', () => setTimeout(resume, 0));
+
+    setInterval(() => {
+      if (paused) return;
+      index = (index + 1) % slides;
+      track.scrollTo({ left: index * track.clientWidth, behavior: 'smooth' });
+    }, 4000);
+  });
+
+  // ===== 9. Coach cards + full-width detail panel (/noored) =====
+  // Each card is followed by its panel (grid-column: 1 / -1). The grid uses
+  // `grid-auto-flow: row dense`, so the open panel drops below the clicked
+  // card's row and later cards backfill it. Only one coach is open at a time.
+  document.querySelectorAll('[data-coach-grid]').forEach((grid) => {
+    const section = grid.closest('section');
+    const filter = section?.querySelector('[data-coach-filter]');
+    const empty = section?.querySelector('[data-coach-empty]');
+    const cards = Array.from(grid.querySelectorAll('[data-coach-card]'));
+    if (!cards.length) return;
+
+    const parts = (card) => {
+      const toggle = card.querySelector('[data-coach-toggle]');
+      const panel = toggle ? document.getElementById(toggle.getAttribute('aria-controls')) : null;
+      return { toggle, panel };
+    };
+
+    const close = (card, restoreFocus = false) => {
+      const { toggle, panel } = parts(card);
+      if (!toggle || !panel) return;
+      card.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+      panel.hidden = true;
+      if (restoreFocus) toggle.focus();
+    };
+
+    const open = (card) => {
+      cards.forEach((other) => { if (other !== card) close(other); });
+      const { toggle, panel } = parts(card);
+      if (!toggle || !panel) return;
+      card.classList.add('is-open');
+      toggle.setAttribute('aria-expanded', 'true');
+      panel.hidden = false;
+    };
+
+    const toggleCard = (card) => {
+      if (card.classList.contains('is-open')) close(card);
+      else open(card);
+    };
+
+    cards.forEach((card) => {
+      const { toggle } = parts(card);
+      if (!toggle) return;
+      toggle.addEventListener('click', () => toggleCard(card));
+      // Whole card is a pointer target; the button stays the accessible control.
+      card.addEventListener('click', (event) => {
+        if (event.target.closest('[data-coach-toggle], a')) return;
+        toggleCard(card);
+      });
+    });
+
+    grid.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return;
+      const openCard = cards.find((card) => card.classList.contains('is-open'));
+      if (openCard) close(openCard, true);
+    });
+
+    if (filter) {
+      filter.addEventListener('input', () => {
+        const query = filter.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        cards.forEach((card) => {
+          const isMatch = !query || (card.dataset.coachName || '').includes(query);
+          if (!isMatch) close(card);
+          card.classList.toggle('hidden', !isMatch);
+          if (isMatch) visibleCount += 1;
+        });
+
+        if (empty) empty.classList.toggle('hidden', visibleCount !== 0);
+      });
+    }
+  });
+
   // Respect user motion preference.
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (prefersReducedMotion) {
     document.querySelectorAll('[data-reveal]').forEach((el) => el.classList.add('is-visible'));
     document.querySelectorAll('[data-hero-intro]').forEach((el) => el.classList.add('is-hero-ready'));
     return;
@@ -309,118 +495,5 @@ export default function initAnimations() {
       });
     }, { threshold: 0.4 });
     io.observe(h);
-  });
-
-  // ===== 7. Live countdown =====
-  document.querySelectorAll('[data-countdown-target]').forEach((wrap) => {
-    const target = parseInt(wrap.dataset.countdownTarget, 10) * 1000;
-    const els = {
-      d: wrap.querySelector('[data-cd="d"]'),
-      h: wrap.querySelector('[data-cd="h"]'),
-      m: wrap.querySelector('[data-cd="m"]'),
-      s: wrap.querySelector('[data-cd="s"]'),
-    };
-    const tick = () => {
-      const diff = target - Date.now();
-      if (diff <= 0) { wrap.classList.add('is-live'); return; }
-      const dd = Math.floor(diff / 86400000);
-      const hh = Math.floor((diff % 86400000) / 3600000);
-      const mm = Math.floor((diff % 3600000) / 60000);
-      const ss = Math.floor((diff % 60000) / 1000);
-      if (els.d) els.d.textContent = String(dd).padStart(2, '0');
-      if (els.h) els.h.textContent = String(hh).padStart(2, '0');
-      if (els.m) els.m.textContent = String(mm).padStart(2, '0');
-      if (els.s) els.s.textContent = String(ss).padStart(2, '0');
-    };
-    tick();
-    setInterval(tick, 1000);
-  });
-
-  // ===== 8. Noored sidebar image slider (auto-advance) =====
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.querySelectorAll('[data-noored-slider]').forEach((slider) => {
-    const track = slider.querySelector('[data-noored-slider-track]');
-    const slides = track ? track.children.length : 0;
-    if (!track || slides < 2 || prefersReducedMotion) return;
-
-    let index = 0;
-    setInterval(() => {
-      index = (index + 1) % slides;
-      track.scrollTo({ left: index * track.clientWidth, behavior: 'smooth' });
-    }, 4000);
-  });
-
-  // ===== 9. Coach cards + full-width detail panel (/noored) =====
-  // Each card is followed by its panel (grid-column: 1 / -1). The grid uses
-  // `grid-auto-flow: row dense`, so the open panel drops below the clicked
-  // card's row and later cards backfill it. Only one coach is open at a time.
-  document.querySelectorAll('[data-coach-grid]').forEach((grid) => {
-    const section = grid.closest('section');
-    const filter = section?.querySelector('[data-coach-filter]');
-    const empty = section?.querySelector('[data-coach-empty]');
-    const cards = Array.from(grid.querySelectorAll('[data-coach-card]'));
-    if (!cards.length) return;
-
-    const parts = (card) => {
-      const toggle = card.querySelector('[data-coach-toggle]');
-      const panel = toggle ? document.getElementById(toggle.getAttribute('aria-controls')) : null;
-      return { toggle, panel };
-    };
-
-    const close = (card, restoreFocus = false) => {
-      const { toggle, panel } = parts(card);
-      if (!toggle || !panel) return;
-      card.classList.remove('is-open');
-      toggle.setAttribute('aria-expanded', 'false');
-      panel.hidden = true;
-      if (restoreFocus) toggle.focus();
-    };
-
-    const open = (card) => {
-      cards.forEach((other) => { if (other !== card) close(other); });
-      const { toggle, panel } = parts(card);
-      if (!toggle || !panel) return;
-      card.classList.add('is-open');
-      toggle.setAttribute('aria-expanded', 'true');
-      panel.hidden = false;
-    };
-
-    const toggleCard = (card) => {
-      if (card.classList.contains('is-open')) close(card);
-      else open(card);
-    };
-
-    cards.forEach((card) => {
-      const { toggle } = parts(card);
-      if (!toggle) return;
-      toggle.addEventListener('click', () => toggleCard(card));
-      // Whole card is a pointer target; the button stays the accessible control.
-      card.addEventListener('click', (event) => {
-        if (event.target.closest('[data-coach-toggle], a')) return;
-        toggleCard(card);
-      });
-    });
-
-    grid.addEventListener('keydown', (event) => {
-      if (event.key !== 'Escape') return;
-      const openCard = cards.find((card) => card.classList.contains('is-open'));
-      if (openCard) close(openCard, true);
-    });
-
-    if (filter) {
-      filter.addEventListener('input', () => {
-        const query = filter.value.trim().toLowerCase();
-        let visibleCount = 0;
-
-        cards.forEach((card) => {
-          const isMatch = !query || (card.dataset.coachName || '').includes(query);
-          if (!isMatch) close(card);
-          card.classList.toggle('hidden', !isMatch);
-          if (isMatch) visibleCount += 1;
-        });
-
-        if (empty) empty.classList.toggle('hidden', visibleCount !== 0);
-      });
-    }
   });
 }

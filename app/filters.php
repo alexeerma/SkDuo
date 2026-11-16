@@ -14,6 +14,17 @@ add_filter('excerpt_more', function () {
 });
 
 /**
+ * Estonian <title> for 404 pages (core default is "Page not found" when no et locale is installed).
+ */
+add_filter('document_title_parts', function (array $parts) {
+    if (is_404()) {
+        $parts['title'] = __('Lehte ei leitud', 'skduo');
+    }
+
+    return $parts;
+});
+
+/**
  * Force the player detail template for single Mängija posts.
  */
 add_filter('single_template_hierarchy', function (array $templates) {

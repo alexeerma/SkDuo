@@ -87,9 +87,9 @@
                       type="button"
                       class="skduo-team-pill skduo-season-picker__trigger"
                       aria-expanded="false"
-                      aria-label="{{ esc_attr($team->name . ' hooaja filter') }}"
                       data-season-trigger
                     >
+                      <span class="sr-only">{{ $team->name }}, hooaeg: </span>
                       <span data-season-label>{{ $defaultSeason['name'] }}</span>
                       <span class="skduo-season-picker__icon" aria-hidden="true"></span>
                     </button>
@@ -149,13 +149,11 @@
     (function () {
       document.querySelectorAll('[data-team-roster]').forEach(function (section) {
         var picker = section.querySelector('[data-season-picker]');
-        var trigger = section.querySelector('[data-season-trigger]');
-        var label = section.querySelector('[data-season-label]');
         var options = Array.prototype.slice.call(section.querySelectorAll('[data-season-option]'));
         var cards = Array.prototype.slice.call(section.querySelectorAll('[data-player-card]'));
         var empty = section.querySelector('.skduo-season-empty');
 
-        if (!picker || !trigger || !options.length || !cards.length) {
+        if (!picker || !options.length || !cards.length) {
           return;
         }
 
@@ -200,40 +198,10 @@
           }
         }
 
-        function closePicker() {
-          picker.classList.remove('is-open');
-          trigger.setAttribute('aria-expanded', 'false');
-        }
-
-        trigger.addEventListener('click', function () {
-          var isOpen = picker.classList.toggle('is-open');
-          trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        });
-
-        options.forEach(function (option) {
-          option.addEventListener('click', function () {
-            selectedSeason = option.getAttribute('data-season-value') || 'all';
-            if (label) {
-              label.textContent = option.textContent.trim();
-            }
-            options.forEach(function (item) {
-              item.classList.toggle('is-active', item === option);
-            });
-            closePicker();
-            updateRoster();
-          });
-        });
-
-        document.addEventListener('click', function (event) {
-          if (!picker.contains(event.target)) {
-            closePicker();
-          }
-        });
-
-        document.addEventListener('keydown', function (event) {
-          if (event.key === 'Escape') {
-            closePicker();
-          }
+        // Open/close + keyboard handling live in resources/js/seasonPicker.js.
+        picker.addEventListener('skduo:season-change', function (event) {
+          selectedSeason = event.detail.value || 'all';
+          updateRoster();
         });
 
         updateRoster();

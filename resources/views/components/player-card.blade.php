@@ -24,7 +24,7 @@
 
   <div class="mb-5 flex items-start justify-between gap-4">
     @if($player->image)
-      <img src="{{ esc_url($player->image) }}" alt="{{ esc_attr($player->name) }}" class="h-16 w-16 object-cover grayscale transition group-hover:grayscale-0" loading="lazy" data-player-image>
+      <img src="{{ esc_url($player->image) }}" alt="" class="h-16 w-16 object-cover grayscale transition group-hover:grayscale-0" loading="lazy" data-player-image>
     @else
       <div class="grid h-16 w-16 place-items-center bg-ink text-paper">
         <span class="font-display text-3xl leading-none">{{ $player->initials }}</span>
@@ -32,7 +32,7 @@
     @endif
 
     @if($player->number)
-      <div class="font-display text-5xl leading-none text-green-deep/25 transition group-hover:text-green-deep">
+      <div class="font-display text-5xl leading-none text-green-deep/65 transition group-hover:text-green-deep">
         {{ $player->number }}
       </div>
     @endif

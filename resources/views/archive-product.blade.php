@@ -48,7 +48,7 @@
           </nav>
         @endif
 
-        <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-ink/55">
+        <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-ink/62">
           <span class="font-display text-base tracking-[0.04em] text-ink">{{ $productCount }}</span>
           {{ $pageOptions['catalog_count_label'] ?? 'toodet' }}
         </p>

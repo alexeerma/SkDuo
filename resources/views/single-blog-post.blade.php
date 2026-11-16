@@ -51,7 +51,7 @@
     </header>
 
     <div class="px-4 py-12 sm:px-6 md:px-12 md:py-20">
-      <div class="mx-auto mb-12 flex max-w-4xl flex-wrap items-center justify-center gap-3 text-xs font-extrabold uppercase tracking-[0.18em] text-ink/45">
+      <div class="mx-auto mb-12 flex max-w-4xl flex-wrap items-center justify-center gap-3 text-xs font-extrabold uppercase tracking-[0.18em] text-ink/62">
         <time datetime="{{ esc_attr(get_the_date('c')) }}">{{ get_the_date('d.m.Y') }}</time>
         <span class="h-1 w-1 rounded-full bg-green-deep"></span>
         <span class="text-green-deep">{{ $category }}</span>
@@ -72,7 +72,7 @@
         <nav class="mx-auto mt-16 flex max-w-4xl flex-col gap-5 border-t border-ink/10 pt-8 sm:flex-row sm:items-start sm:justify-between" aria-label="{{ esc_attr__('Postituste navigeerimine', 'skduo') }}">
           @if($previousPost)
             <a href="{{ esc_url(get_permalink($previousPost)) }}" class="group block max-w-sm text-left">
-              <span class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-ink/45 transition group-hover:text-green-deep">
+              <span class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-ink/62 transition group-hover:text-green-deep">
                 <span aria-hidden="true">←</span>
                 Eelmine
               </span>
@@ -82,7 +82,7 @@
 
           @if($nextPost)
             <a href="{{ esc_url(get_permalink($nextPost)) }}" class="group block max-w-sm text-left sm:ml-auto sm:text-right">
-              <span class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-ink/45 transition group-hover:text-green-deep sm:justify-end">
+              <span class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.18em] text-ink/62 transition group-hover:text-green-deep sm:justify-end">
                 Järgmine
                 <span aria-hidden="true">→</span>
               </span>

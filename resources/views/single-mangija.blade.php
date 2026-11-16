@@ -125,7 +125,7 @@
         <dl class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           @foreach($facts as $label => $value)
             <div class="border border-ink/10 bg-cream p-5">
-              <dt class="text-[0.62rem] font-extrabold uppercase tracking-widest text-ink/45">{{ $label }}</dt>
+              <dt class="text-[0.62rem] font-extrabold uppercase tracking-widest text-ink/62">{{ $label }}</dt>
               <dd class="mt-3 font-display text-3xl leading-none text-ink sm:text-4xl">{{ $value ?: '-' }}</dd>
             </div>
           @endforeach

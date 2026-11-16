@@ -86,6 +86,61 @@ html::-webkit-scrollbar {
   h1, h2, h3 {
     @apply font-display tracking-wide;
   }
+
+  /* Fallback keyboard focus ring for anything without its own focus-visible style.
+     Green Deep on light surfaces, Court Mint on dark ones (both >= 3:1 against the
+     surface). Layered, so any focus-visible:* utility or component rule still wins. */
+  :root {
+    --skduo-focus-ring: var(--color-green-deep);
+  }
+
+  :where(footer, section, div, article, aside, header, nav, li):where(.bg-ink, .bg-ink-2, .bg-hero-dark, .bg-card-fallback, .bg-green-deep, [class*="bg-[var(--skduo-"]) {
+    --skduo-focus-ring: var(--color-green-mint);
+  }
+
+  :where(footer, section, div, article, aside, header, nav, li):where(.bg-paper, .bg-white, .bg-cream) {
+    --skduo-focus-ring: var(--color-green-deep);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--skduo-focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* Programmatic focus targets (skip link -> <main>, shop list after pagination) need no ring. */
+  main:focus,
+  [data-product-archive]:focus {
+    outline: none;
+  }
+}
+
+/* Skip link: hidden until focused, then pinned above the sticky header. */
+.skduo-skip-link {
+  background: var(--color-ink);
+  border-radius: 999px;
+  color: var(--color-paper);
+  font-size: 0.75rem;
+  font-weight: 800;
+  left: 1rem;
+  letter-spacing: 0.14em;
+  padding: 0.75rem 1.25rem;
+  position: absolute;
+  text-transform: uppercase;
+  top: 0.75rem;
+  transform: translateY(-200%);
+  z-index: 100;
+}
+
+.skduo-skip-link:focus-visible {
+  outline: 2px solid var(--color-green-mint);
+  outline-offset: 2px;
+  transform: translateY(0);
+}
+
+/* Desktop nav dropdown dismissed with Escape (see animations.js). */
+[data-nav-dropdown].is-dismissed > [data-nav-submenu] {
+  opacity: 0;
+  visibility: hidden;
 }
 
 body:has(.skduo-mobile-menu[open]) {
@@ -138,6 +193,11 @@ body.is-menu-open {
   animation-play-state: paused;
 }
 
+/* Keyboard focus on a ticker link: stop and reset the marquee so the focused link stays in view. */
+.skduo-announcement-marquee:focus-within .skduo-announcement-track {
+  animation: none;
+}
+
 .skduo-announcement-link {
   border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 45%, transparent);
   text-underline-offset: 0.22em;
@@ -148,6 +208,11 @@ body.is-menu-open {
 .skduo-announcement-link:focus-visible {
   border-color: currentColor;
   color: var(--color-green-deep);
+}
+
+.skduo-announcement-link:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
 }
 
 /* Shared pill family for team header: level, league, season picker. Same box size for all. */
@@ -193,7 +258,7 @@ body.is-menu-open {
 }
 
 .skduo-season-picker__trigger:focus-visible {
-  outline: 2px solid var(--color-green-mint);
+  outline: 2px solid var(--skduo-focus-ring, var(--color-green-deep));
   outline-offset: 2px;
 }
 
@@ -225,7 +290,8 @@ body.is-menu-open {
   position: absolute;
   top: calc(100% + 0.45rem);
   transform: translateY(-0.35rem);
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition: opacity 160ms ease, transform 160ms ease, visibility 0s linear 160ms;
+  visibility: hidden; /* keeps closed options out of the tab order and a11y tree */
   width: max-content;
   z-index: 30;
 }
@@ -234,6 +300,8 @@ body.is-menu-open {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0);
+  transition: opacity 160ms ease, transform 160ms ease, visibility 0s;
+  visibility: visible;
 }
 
 .skduo-season-picker__option {
@@ -292,6 +360,11 @@ body.is-menu-open {
 .skduo-scroll-cue:focus-visible {
   color: var(--color-green-mint);
   transform: translateY(2px);
+}
+
+.skduo-scroll-cue:focus-visible {
+  outline: 2px solid var(--color-green-mint);
+  outline-offset: 4px;
 }
 
 .skduo-scroll-cue__mouse {
@@ -399,6 +472,11 @@ body.is-menu-open {
   transform: translateY(-2px);
 }
 
+.skduo-logo-slider__item:focus-visible {
+  outline: 2px solid var(--skduo-focus-ring, var(--color-green-deep));
+  outline-offset: 2px;
+}
+
 .skduo-logo-slider__item img {
   filter: none;
   max-height: 100%;
@@ -480,6 +558,11 @@ a.page-numbers:hover,
 a.page-numbers:focus-visible {
   border-color: var(--color-green-deep);
   color: var(--color-green-deep);
+}
+
+a.page-numbers:focus-visible {
+  outline: 2px solid var(--color-green-deep);
+  outline-offset: 2px;
 }
 
 .skduo-blog-pagination .page-numbers.current {
@@ -580,7 +663,7 @@ a.page-numbers:focus-visible {
 }
 
 .skduo-article-content figcaption {
-  color: color-mix(in srgb, var(--color-ink) 48%, transparent);
+  color: color-mix(in srgb, var(--color-ink) 62%, transparent);
   font-size: 0.82rem;
   line-height: 1.5;
   margin-top: 0.75rem;
@@ -1213,6 +1296,7 @@ a.page-numbers:focus-visible {
 }
 
 .skduo-coach-card.is-open {
+  --skduo-focus-ring: var(--color-green-mint);
   background: var(--color-green-deep);
   border-color: var(--color-green-deep);
 }
@@ -1258,7 +1342,7 @@ a.page-numbers:focus-visible {
 .skduo-coach-card__toggle:focus { outline: none; }
 
 .skduo-coach-card__toggle:focus-visible {
-  outline: 2px solid var(--color-green-mint);
+  outline: 2px solid var(--skduo-focus-ring, var(--color-green-deep));
   outline-offset: 4px;
 }
 
@@ -1331,7 +1415,7 @@ a.page-numbers:focus-visible {
 .skduo-coach-panel__link:hover { text-decoration-color: currentColor; }
 
 .skduo-coach-panel__link:focus-visible {
-  outline: 2px solid var(--color-green-mint);
+  outline: 2px solid var(--color-green-deep);
   outline-offset: 2px;
 }
 
@@ -1543,6 +1627,11 @@ a.page-numbers:focus-visible {
   outline: none;
 }
 
+.skduo-contact-form .wpcf7-form-control:not([type="submit"]):focus-visible {
+  outline: 2px solid var(--color-green-deep);
+  outline-offset: 0;
+}
+
 .skduo-contact-form .wpcf7-form-control.wpcf7-textarea {
   min-height: 9rem;
 }
@@ -1605,7 +1694,7 @@ a.page-numbers:focus-visible {
 .skduo-product-price del {
   margin-right: 0.4em;
   font-size: 0.72em;
-  color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+  color: color-mix(in srgb, var(--color-ink) 62%, transparent);
   text-decoration-thickness: 1px;
 }
 .skduo-product-price ins {

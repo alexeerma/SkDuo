@@ -25,9 +25,11 @@
       wp_body_open();
     @endphp
 
+    <a href="#main" class="skduo-skip-link" data-menu-inert>Liigu põhisisu juurde</a>
+
     @include('sections.header')
 
-    <main id="main" class="min-h-screen">
+    <main id="main" class="min-h-screen" tabindex="-1" data-menu-inert>
       @yield('content')
     </main>
 

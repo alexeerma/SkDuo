@@ -1,7 +1,7 @@
 {{--
   Site footer.
 --}}
-<footer class="bg-ink px-4 py-12 pb-6 text-paper md:px-8 md:py-14">
+<footer data-menu-inert class="bg-ink px-4 py-12 pb-6 text-paper md:px-8 md:py-14">
   @if(function_exists('skduo_get_logo_slider_items') && ! empty(skduo_get_logo_slider_items()))
     <div class="-mx-4 -mt-12 mb-10 md:-mx-8 md:-mt-14 md:mb-12">
       <x-logo-slider eyebrow="" :title="function_exists('skduo_get_footer_logo_slider_title') ? skduo_get_footer_logo_slider_title() : __('Meie toetajad', 'skduo')" theme="dark" />
@@ -23,8 +23,8 @@
     @endphp
 
     @foreach($footerColumns as $column)
-      <div>
-        <h4 class="font-display text-base tracking-widest mb-4 text-green-mint">{{ $column['title'] }}</h4>
+      <nav aria-label="{{ esc_attr($column['title']) }}">
+        <h2 class="font-display text-base tracking-widest mb-4 text-green-mint">{{ $column['title'] }}</h2>
         <ul class="list-none space-y-2">
           @foreach($column['items'] as $item)
             <li>
@@ -38,7 +38,7 @@
             </li>
           @endforeach
         </ul>
-      </div>
+      </nav>
     @endforeach
   </div>
 

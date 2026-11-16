@@ -34,7 +34,7 @@
 
   <div class="mt-3.5 flex flex-col gap-1 px-0.5 md:mt-4">
     @if($card['category'])
-      <p class="text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-ink/55">{{ $card['category'] }}</p>
+      <p class="text-[0.62rem] font-extrabold uppercase tracking-[0.16em] text-ink/62">{{ $card['category'] }}</p>
     @endif
 
     <div class="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5">

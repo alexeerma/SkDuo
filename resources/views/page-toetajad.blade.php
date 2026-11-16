@@ -59,7 +59,7 @@
           <span class="h-px w-8 bg-green-mint"></span>
           {{ $pageOptions['hero_eyebrow'] ?? 'SK DUO · Partnerid' }}
         </span>
-        <span class="text-[0.65rem] font-bold uppercase tracking-widest text-paper/35">
+        <span class="text-[0.65rem] font-bold uppercase tracking-widest text-paper/60">
           {{ count($allSponsors) }} {{ $pageOptions['partner_count_label'] ?? 'koostööpartnerit' }}
         </span>
       </div>
@@ -189,12 +189,12 @@
               @if($partner->logo_small)
                 <img
                   src="{{ esc_url($partner->logo_small) }}"
-                  alt="{{ esc_attr($partner->name) }}"
+                  alt=""
                   class="h-16 max-w-[200px] object-contain transition duration-300 group-hover:scale-105"
                   loading="lazy"
                 >
               @else
-                <span class="font-display text-4xl leading-none tracking-wide text-paper/30 transition group-hover:text-ink/50">
+                <span class="font-display text-4xl leading-none tracking-wide text-paper/30 transition group-hover:text-ink/50" aria-hidden="true">
                   {{ $partner->name }}
                 </span>
               @endif
@@ -247,12 +247,12 @@
               @if($sponsor->logo_small)
                 <img
                   src="{{ esc_url($sponsor->logo_small) }}"
-                  alt="{{ esc_attr($sponsor->name) }}"
+                  alt=""
                   class="h-16 max-w-[200px] object-contain transition duration-300 group-hover:scale-105"
                   loading="lazy"
                 >
               @else
-                <span class="font-display text-4xl leading-none tracking-wide text-ink/30 transition group-hover:text-paper/50">
+                <span class="font-display text-4xl leading-none tracking-wide text-ink/30 transition group-hover:text-paper/50" aria-hidden="true">
                   {{ $sponsor->name }}
                 </span>
               @endif
@@ -261,7 +261,7 @@
             <div class="border-t border-ink/10 px-6 py-4 transition group-hover:border-white/20">
               <div class="font-display text-lg leading-none tracking-wide">{{ $sponsor->name }}</div>
               @if($sponsor->website)
-                <div class="mt-1 text-[0.6rem] font-bold uppercase tracking-widest text-ink/40 transition group-hover:text-paper/50">
+                <div class="mt-1 text-[0.6rem] font-bold uppercase tracking-widest text-ink/62 transition group-hover:text-paper/70">
                   {{ parse_url($sponsor->website, PHP_URL_HOST) ?: '' }}
                 </div>
               @endif

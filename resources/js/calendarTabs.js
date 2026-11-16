@@ -34,11 +34,17 @@ export default function initCalendarTabs() {
     tabs.forEach((tab, index) => {
       tab.addEventListener('click', () => select(tab.dataset.calendarTab, { updateHash: true }));
       tab.addEventListener('keydown', (event) => {
-        if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') {
+        const targets = {
+          ArrowRight: (index + 1) % tabs.length,
+          ArrowLeft: (index + tabs.length - 1) % tabs.length,
+          Home: 0,
+          End: tabs.length - 1,
+        };
+        if (!(event.key in targets)) {
           return;
         }
         event.preventDefault();
-        const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        const next = tabs[targets[event.key]];
         select(next.dataset.calendarTab, { focus: true, updateHash: true });
       });
     });

@@ -49,11 +49,11 @@
     <span class="font-display text-lg text-ink">{{ $time }}</span>
     <div class="flex items-center gap-2">
       <a href="{{ esc_url(get_permalink($match->id)) }}" class="-my-2 inline-block px-1 py-2 text-ink/60 transition after:absolute after:inset-0 group-hover:text-green-deep focus-visible:outline-none">
-        Info →
+        Info<span class="sr-only">: {{ $match->home }} – {{ $match->away }}, {{ $day }}. {{ $monthShort }}</span> <span aria-hidden="true">→</span>
       </a>
       @if($hasTicket)
         <a href="{{ esc_url($match->ticket_url) }}" target="_blank" rel="noopener" class="relative z-10 rounded bg-green-deep px-3 py-1.5 text-paper transition hover:bg-ink">
-          Pilet →
+          Pilet<span class="sr-only">: {{ $match->home }} – {{ $match->away }} (avaneb uues aknas)</span> <span aria-hidden="true">→</span>
         </a>
       @elseif($isFree)
         <span class="rounded bg-lime px-2 py-1 text-[0.6rem] text-ink">Tasuta</span>

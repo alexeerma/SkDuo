@@ -26,7 +26,7 @@
             <span class="block font-display text-4xl leading-none text-ink md:text-5xl">{{ wp_date('d', $match->date_ts) }}</span>
             <span class="mt-1 block text-[0.68rem] font-extrabold uppercase tracking-[0.18em] text-ink/62">{{ wp_date('D · H:i', $match->date_ts) }}</span>
           </time>
-          <span class="inline-flex rounded-full px-2.5 py-1 text-[0.6rem] font-extrabold uppercase tracking-widest md:mt-4 {{ $isPast ? 'bg-ink/8 text-ink/55' : 'bg-green-deep text-paper' }}">
+          <span class="inline-flex rounded-full px-2.5 py-1 text-[0.6rem] font-extrabold uppercase tracking-widest md:mt-4 {{ $isPast ? 'bg-ink/8 text-ink/68' : 'bg-green-deep text-paper' }}">
             {{ $statusLabel }}
           </span>
         </div>
@@ -57,11 +57,11 @@
           @endif
 
           <a href="{{ esc_url($match->permalink) }}" class="inline-flex items-center rounded-full border border-ink/15 px-4 py-2 text-xs font-extrabold uppercase tracking-widest text-ink transition hover:border-green-deep hover:text-green-deep">
-            Info
+            Info<span class="sr-only">: {{ $match->home }} – {{ $match->away }}, {{ wp_date('d.m', $match->date_ts) }}</span>
           </a>
           @if(($isPast || $match->status === 'finished') && ! empty($match->dataproject_url))
             <a href="{!! esc_url($match->dataproject_url) !!}" class="inline-flex items-center rounded-full border border-ink/15 px-4 py-2 text-xs font-extrabold uppercase tracking-widest text-ink transition hover:border-green-deep hover:text-green-deep" target="_blank" rel="noopener noreferrer">
-              Statistika
+              Statistika<span class="sr-only">: {{ $match->home }} – {{ $match->away }} (avaneb uues aknas)</span>
             </a>
           @endif
           @if(! $isPast && ! empty($match->free_entry))

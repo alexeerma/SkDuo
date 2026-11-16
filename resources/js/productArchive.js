@@ -1,7 +1,7 @@
 export default function initProductArchive() {
   const parser = new DOMParser();
 
-  async function loadArchive(url, shouldPushState = true) {
+  async function loadArchive(url, shouldPushState = true, fromPagination = false) {
     const archive = document.querySelector('[data-product-archive]');
     const hero = document.querySelector('[data-product-archive-hero]');
 
@@ -41,6 +41,17 @@ export default function initProductArchive() {
         window.history.pushState({ productArchiveUrl: url }, '', url);
       }
 
+      // The clicked link was replaced, so focus would fall back to <body>. Move it to the
+      // now-active filter pill, or to the product list after a pagination click.
+      if (shouldPushState) {
+        const activePill = document.querySelector('[data-product-archive-link][aria-current="page"]');
+        const target = (!fromPagination && activePill) || document.querySelector('[data-product-archive]');
+        if (target) {
+          if (target.matches('[data-product-archive]')) target.setAttribute('tabindex', '-1');
+          target.focus();
+        }
+      }
+
     } catch (error) {
       window.location.href = url;
     }
@@ -60,7 +71,7 @@ export default function initProductArchive() {
     }
 
     event.preventDefault();
-    loadArchive(url.href);
+    loadArchive(url.href, true, Boolean(link.closest('[data-product-pagination]')));
   });
 
   window.addEventListener('popstate', () => {

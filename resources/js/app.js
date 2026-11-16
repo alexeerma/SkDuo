@@ -18,6 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
     import('./productVariations.js').then(({ default: initProductVariations }) => initProductVariations());
   }
 
+  if (document.querySelector('[data-season-picker]')) {
+    import('./seasonPicker.js').then(({ default: initSeasonPickers }) => initSeasonPickers());
+  }
+
   if (document.querySelector('[data-calendar-tabs]')) {
     import('./calendarTabs.js').then(({ default: initCalendarTabs }) => initCalendarTabs());
   }

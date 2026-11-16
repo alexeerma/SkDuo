@@ -104,14 +104,14 @@
         </div>
       </div>
 
-      <aside class="grid gap-3">
+      <nav class="grid gap-3" aria-label="Lehe sisu">
         @foreach($navItems as $item)
           <a href="#{{ $item['target'] }}" class="group flex items-center justify-between border border-white/10 bg-white/8 px-5 py-4 text-xs font-extrabold uppercase tracking-[0.18em] text-paper backdrop-blur-md transition hover:border-green-mint hover:bg-green-mint hover:text-ink">
             {{ $item['label'] }}
             <span class="text-green-mint transition group-hover:text-ink" aria-hidden="true">→</span>
           </a>
         @endforeach
-      </aside>
+      </nav>
     </div>
   </section>
 
@@ -133,18 +133,18 @@
       </div>
 
       <div class="lg:self-start">
-        <aside id="lisainfo" class="border border-ink/10 bg-white p-6">
+        <div id="lisainfo" class="border border-ink/10 bg-white p-6">
           <div class="text-xs font-extrabold uppercase tracking-[0.18em] text-green-deep">Lisainfo</div>
           <div class="mt-5 space-y-3 text-sm font-semibold text-ink/68">
             <p>{{ $options['contact_name'] ?? '' }}</p>
             <p><a href="tel:{{ preg_replace('/\s+/', '', $options['contact_phone'] ?? '') }}" class="transition hover:text-green-deep">{{ $options['contact_phone'] ?? '' }}</a></p>
             <p><a href="mailto:{{ esc_attr($options['contact_email'] ?? '') }}" class="transition hover:text-green-deep">{{ $options['contact_email'] ?? '' }}</a></p>
           </div>
-        </aside>
+        </div>
 
         @if(! empty($sidebarImages))
           <div class="mt-6" data-noored-slider>
-            <div class="skduo-noored-slider__track" data-noored-slider-track>
+            <div class="skduo-noored-slider__track" data-noored-slider-track tabindex="0" role="region" aria-label="Pildigalerii">
               @foreach($sidebarImages as $image)
                 <div class="skduo-noored-slider__slide">
                   <img src="{{ $image }}" alt="" loading="lazy">
@@ -169,10 +169,12 @@
 
       @if(count($trainingGroups) > 6)
         <div class="mb-6">
+          <label for="coach-filter" class="sr-only">Otsi treenerit</label>
           <input
+            id="coach-filter"
             type="search"
             placeholder="Otsi treenerit..."
-            class="w-full max-w-sm border border-ink/15 bg-white px-4 py-3 text-sm text-ink transition focus:border-green-deep focus:outline-none sm:max-w-xs"
+            class="w-full max-w-sm border border-ink/15 bg-white px-4 py-3 text-sm text-ink transition focus:border-green-deep focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-green-deep sm:max-w-xs"
             data-coach-filter
           >
         </div>
@@ -189,7 +191,7 @@
           <article class="skduo-coach-card" data-coach-card data-coach-name="{{ esc_attr(mb_strtolower($group['coach'])) }}">
             <div class="min-w-0">
               <h3 class="font-display text-3xl leading-none tracking-wide text-green-deep">{{ $group['coach'] }}</h3>
-              <p class="mt-2 text-xs font-extrabold uppercase tracking-[0.14em] text-ink/45">
+              <p class="mt-2 text-xs font-extrabold uppercase tracking-[0.14em] text-ink/62">
                 {{ $groupCount }} {{ $groupCount === 1 ? 'grupp' : 'gruppi' }}
               </p>
             </div>
@@ -200,11 +202,12 @@
               aria-controls="{{ $coachPanelId }}"
               data-coach-toggle
             >
-              <span class="sr-only">{{ $group['coach'] }}: treeninggrupid</span>
-              <span class="skduo-coach-card__label" aria-hidden="true">
+              {{-- Visible label stays in the accessible name (WCAG 2.5.3); sr-only suffix adds the coach. --}}
+              <span class="skduo-coach-card__label">
                 <span class="skduo-coach-card__label-closed">Vaata gruppe</span>
                 <span class="skduo-coach-card__label-open">Sulge</span>
               </span>
+              <span class="sr-only">: {{ $group['coach'] }}</span>
               <svg class="skduo-coach-card__chevron" viewBox="0 0 12 8" width="12" height="8" fill="none" aria-hidden="true" focusable="false">
                 <path d="M1 1.5 6 6.5l5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
               </svg>
@@ -235,13 +238,13 @@
                   <ul class="space-y-2 text-sm leading-relaxed">
                     @if(! empty($contact['phone']))
                       <li>
-                        <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/45">Telefon</span>
+                        <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/62">Telefon</span>
                         <a href="{{ esc_attr($contact['phone_href']) }}" class="skduo-coach-panel__link">{{ $contact['phone'] }}</a>
                       </li>
                     @endif
                     @if(! empty($contact['email']))
                       <li>
-                        <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/45">E-post</span>
+                        <span class="block text-[0.7rem] font-extrabold uppercase tracking-[0.14em] text-ink/62">E-post</span>
                         <a href="mailto:{{ esc_attr($contact['email']) }}" class="skduo-coach-panel__link">{{ $contact['email'] }}</a>
                       </li>
                     @endif
@@ -256,7 +259,7 @@
         @endforeach
       </div>
 
-      <p class="mt-4 hidden text-sm font-semibold text-ink/50" data-coach-empty>
+      <p class="mt-4 hidden text-sm font-semibold text-ink/62" data-coach-empty role="status">
         Ühtegi treenerit ei leitud.
       </p>
     </div>
@@ -277,13 +280,13 @@
           <article class="group border border-white/10 bg-white/8 p-5 transition hover:border-green-mint">
             <div class="grid aspect-[4/5] place-items-center overflow-hidden bg-card-fallback" style="--fallback-pos: 35% 25%; --fallback-opacity: 22%">
               @if(! empty($coach['image']))
-                <img src="{{ $coach['image'] }}" alt="{{ $coach['name'] }}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                <img src="{{ $coach['image'] }}" alt="" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
               @else
                 <span class="font-display text-6xl leading-none text-paper/82">{{ $coach['initials'] ?? '' }}</span>
               @endif
             </div>
             <h3 class="mt-4 font-display text-3xl leading-none tracking-wide text-green-mint">{{ $coach['name'] }}</h3>
-            <p class="mt-2 text-xs font-extrabold uppercase tracking-[0.18em] text-paper/45">{{ $coach['role'] }}</p>
+            <p class="mt-2 text-xs font-extrabold uppercase tracking-[0.18em] text-paper/60">{{ $coach['role'] }}</p>
             @if(! empty($coach['phone']) || ! empty($coach['email']))
               <div class="mt-3 space-y-1 text-sm font-semibold text-paper/68">
                 @if(! empty($coach['phone']))
@@ -310,7 +313,8 @@
         <h2 class="font-serif-display text-4xl leading-[0.95] tracking-normal md:text-6xl">{{ $options['pricing_title'] ?? '' }}</h2>
       </div>
 
-      <div class="overflow-x-auto border border-ink/10 bg-white">
+      {{-- Focusable so keyboard users can scroll the wide table on small screens. --}}
+      <div class="overflow-x-auto border border-ink/10 bg-white" tabindex="0" role="region" aria-label="{{ esc_attr(($options['pricing_title'] ?? '') ?: 'Hinnakiri') }}">
         <table class="w-full min-w-[760px] text-left text-sm">
           <thead class="bg-ink text-paper">
             <tr>
@@ -372,7 +376,7 @@
           </div>
 
           @if(! empty($membershipFooterLines))
-            <div class="mt-8 border-t border-ink/10 pt-6 text-sm leading-relaxed text-ink/58">
+            <div class="mt-8 border-t border-ink/10 pt-6 text-sm leading-relaxed text-ink/62">
               @foreach($membershipFooterLines as $line)
                 <p>{{ $line }}</p>
               @endforeach

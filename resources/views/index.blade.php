@@ -54,11 +54,11 @@
 
       @if(! empty($categories))
         <div class="mx-auto mt-10 flex max-w-4xl flex-wrap justify-center gap-2">
-          <a href="{{ esc_url($postsUrl) }}" class="rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] transition {{ $currentCategoryId === 0 ? 'border-green-mint bg-green-mint text-ink' : 'border-paper/25 text-paper/70 hover:border-green-mint hover:text-green-mint' }}">
+          <a href="{{ esc_url($postsUrl) }}" @if($currentCategoryId === 0) aria-current="page" @endif class="rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] transition {{ $currentCategoryId === 0 ? 'border-green-mint bg-green-mint text-ink' : 'border-paper/25 text-paper/70 hover:border-green-mint hover:text-green-mint' }}">
             Kõik
           </a>
           @foreach($categories as $cat)
-            <a href="{{ esc_url(get_category_link($cat)) }}" class="rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] transition {{ $currentCategoryId === (int) $cat->term_id ? 'border-green-mint bg-green-mint text-ink' : 'border-paper/25 text-paper/70 hover:border-green-mint hover:text-green-mint' }}">
+            <a href="{{ esc_url(get_category_link($cat)) }}" @if($currentCategoryId === (int) $cat->term_id) aria-current="page" @endif class="rounded-full border px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] transition {{ $currentCategoryId === (int) $cat->term_id ? 'border-green-mint bg-green-mint text-ink' : 'border-paper/25 text-paper/70 hover:border-green-mint hover:text-green-mint' }}">
               {{ $cat->name }}
             </a>
           @endforeach
@@ -78,7 +78,7 @@
               $postCategories = get_the_category();
               $category = ! empty($postCategories) ? $postCategories[0]->name : __('Uudis', 'skduo');
               $image = get_the_post_thumbnail(get_the_ID(), 'large', [
-                'alt' => get_the_title(),
+                'alt' => '', // Title is the link text right below.
                 'class' => 'h-full w-full mx-auto object-cover opacity-82 transition duration-500 group-hover:scale-105',
                 'sizes' => '(min-width: 1280px) 400px, (min-width: 768px) 50vw, 100vw',
               ]);
@@ -125,7 +125,7 @@
           ]) !!}
         </div>
       @else
-        <div class="border border-dashed border-ink/20 p-8 text-center text-ink/55">
+        <div class="border border-dashed border-ink/20 p-8 text-center text-ink/62">
           Sisu ei leitud.
         </div>
       @endif

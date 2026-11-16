@@ -29,9 +29,9 @@
               type="button"
               class="skduo-season-picker__trigger"
               aria-expanded="false"
-              aria-label="Hooaja filter"
               data-season-trigger
             >
+              <span class="sr-only">Hooaeg: </span>
               <span data-season-label>{{ $defaultSeason->label }}</span>
               <span class="skduo-season-picker__icon" aria-hidden="true"></span>
             </button>
@@ -85,8 +85,9 @@
                   data-arhiiv-image
                   data-full="{{ esc_url($image['url']) }}"
                   data-alt="{{ esc_attr($image['alt']) }}"
-                  class="group relative aspect-square overflow-hidden rounded-2xl border border-ink/10 bg-cream focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-mint"
+                  class="group relative aspect-square overflow-hidden rounded-2xl border border-ink/10 bg-cream focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-deep"
                 >
+                  <span class="sr-only">Ava pilt suuremalt{{ $image['alt'] ? ': ' : '' }}</span>
                   <img
                     src="{{ esc_url($image['url']) }}"
                     alt="{{ esc_attr($image['alt']) }}"
@@ -105,15 +106,16 @@
         class="fixed inset-0 z-50 hidden items-center justify-center bg-ink/92 p-4 sm:p-8"
         role="dialog"
         aria-modal="true"
+        aria-label="Pildivaade"
         aria-hidden="true"
       >
         <button
           type="button"
           data-arhiiv-lightbox-close
-          class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-paper/30 text-paper transition hover:border-paper hover:bg-paper hover:text-ink sm:right-8 sm:top-8"
+          class="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border border-paper/30 text-paper transition hover:border-paper hover:bg-paper hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-mint sm:right-8 sm:top-8"
           aria-label="Sulge"
         >
-          &times;
+          <span aria-hidden="true">&times;</span>
         </button>
         <img data-arhiiv-lightbox-image src="" alt="" class="max-h-full max-w-full rounded-lg object-contain">
       </div>
@@ -127,49 +129,15 @@
           var galleries = Array.prototype.slice.call(page.querySelectorAll('[data-arhiiv-gallery]'));
 
           if (picker && galleries.length > 1) {
-            var trigger = picker.querySelector('[data-season-trigger]');
-            var label = picker.querySelector('[data-season-label]');
-            var options = Array.prototype.slice.call(picker.querySelectorAll('[data-season-option]'));
-
-            function closePicker() {
-              picker.classList.remove('is-open');
-              trigger.setAttribute('aria-expanded', 'false');
-            }
-
             function selectSeason(slug) {
               galleries.forEach(function (gallery) {
                 gallery.classList.toggle('hidden', gallery.getAttribute('data-season') !== slug);
               });
             }
 
-            trigger.addEventListener('click', function () {
-              var isOpen = picker.classList.toggle('is-open');
-              trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-            });
-
-            options.forEach(function (option) {
-              option.addEventListener('click', function () {
-                options.forEach(function (item) {
-                  item.classList.toggle('is-active', item === option);
-                });
-                if (label) {
-                  label.textContent = option.textContent.trim();
-                }
-                selectSeason(option.getAttribute('data-season-value'));
-                closePicker();
-              });
-            });
-
-            document.addEventListener('click', function (event) {
-              if (!picker.contains(event.target)) {
-                closePicker();
-              }
-            });
-
-            document.addEventListener('keydown', function (event) {
-              if (event.key === 'Escape') {
-                closePicker();
-              }
+            // Open/close + keyboard handling live in resources/js/seasonPicker.js.
+            picker.addEventListener('skduo:season-change', function (event) {
+              selectSeason(event.detail.value);
             });
           }
 
@@ -179,12 +147,20 @@
           var image = lightbox.querySelector('[data-arhiiv-lightbox-image]');
           var closeBtn = lightbox.querySelector('[data-arhiiv-lightbox-close]');
 
-          function open(src, alt) {
+          var lastTrigger = null;
+
+          function isOpen() {
+            return lightbox.getAttribute('aria-hidden') === 'false';
+          }
+
+          function open(src, alt, trigger) {
+            lastTrigger = trigger || null;
             image.src = src;
             image.alt = alt || '';
             lightbox.classList.remove('hidden');
             lightbox.classList.add('flex');
             lightbox.setAttribute('aria-hidden', 'false');
+            closeBtn.focus();
           }
 
           function close() {
@@ -192,12 +168,14 @@
             lightbox.classList.remove('flex');
             lightbox.setAttribute('aria-hidden', 'true');
             image.src = '';
+            if (lastTrigger) lastTrigger.focus();
+            lastTrigger = null;
           }
 
           page.addEventListener('click', function (event) {
             var trigger = event.target.closest('[data-arhiiv-image]');
             if (!trigger) return;
-            open(trigger.dataset.full, trigger.dataset.alt);
+            open(trigger.dataset.full, trigger.dataset.alt, trigger);
           });
 
           closeBtn.addEventListener('click', close);
@@ -205,7 +183,13 @@
             if (event.target === lightbox) close();
           });
           document.addEventListener('keydown', function (event) {
+            if (!isOpen()) return;
             if (event.key === 'Escape') close();
+            // The close button is the only control in the dialog, so Tab stays on it.
+            if (event.key === 'Tab') {
+              event.preventDefault();
+              closeBtn.focus();
+            }
           });
         })();
       </script>

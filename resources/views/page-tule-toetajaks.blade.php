@@ -37,6 +37,8 @@
   @endphp
 
   <section class="bg-paper px-4 py-14 text-ink sm:px-6 md:px-12 md:py-20">
+    {{-- The visible hero headline sits in the closing CTA; this keeps the page title as the first heading. --}}
+    <h1 class="sr-only">{{ get_the_title() }}</h1>
     <div class="mx-auto max-w-[1360px]">
       @php($hasEditorContent = false)
       @while(have_posts())
@@ -119,11 +121,11 @@
           {{ $pageOptions['hero_eyebrow'] ?? 'Saa partneriks' }}
           <span class="h-px w-7 bg-green-mint"></span>
         </span>
-        <h1 class="font-display text-4xl leading-[0.9] tracking-wide sm:text-5xl md:text-7xl">
+        <h2 class="font-display text-4xl leading-[0.9] tracking-wide sm:text-5xl md:text-7xl">
           @foreach($heroLines as $line)
             {{ $line }}@if(! $loop->last)<br>@endif
           @endforeach
-        </h1>
+        </h2>
         <p class="mx-auto mt-7 max-w-lg text-base leading-relaxed text-paper/60">
           {{ $pageOptions['hero_text'] ?? '' }}
         </p>
