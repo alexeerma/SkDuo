@@ -10,6 +10,11 @@ if (! process.env.APP_URL) {
 export default defineConfig({
   base: '/wp-content/themes/skduo/public/build/',
   assetsInclude: ['**/*.glb'],
+  build: {
+    // three.module (~560 kB) is only reached via dynamic imports gated on
+    // canvas data attributes in app.js, so it never loads on pages without 3D.
+    chunkSizeWarningLimit: 600,
+  },
   plugins: [
     tailwindcss(),
     laravel({

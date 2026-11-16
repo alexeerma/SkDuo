@@ -37,6 +37,7 @@
               src="{{ esc_url($player->image_large) }}"
               alt="{{ esc_attr($player->name) }}"
               class="absolute inset-0 h-full w-full object-cover"
+              fetchpriority="high"
             >
             <div class="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/5 to-transparent"></div>
           @else

@@ -35,7 +35,7 @@
 
       @if($meeskonnadHeroImage)
         <div class="relative min-h-[280px] overflow-hidden bg-hero-dark sm:min-h-[360px] lg:min-h-0">
-          <img src="{{ esc_url($meeskonnadHeroImage) }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy">
+          <img src="{{ esc_url($meeskonnadHeroImage) }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="eager" fetchpriority="high" decoding="async">
           <div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-green-deep/45 to-transparent"></div>
         </div>
       @else
