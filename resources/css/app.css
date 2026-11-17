@@ -669,6 +669,16 @@ a.page-numbers:focus-visible {
   margin-top: 0.75rem;
 }
 
+.skduo-article-content .wp-block-button__link {
+  background-color: var(--color-green-deep);
+  color: var(--color-paper);
+  text-decoration: none;
+}
+
+.skduo-article-content .wp-block-button__link:hover {
+  background-color: var(--color-green-mid);
+}
+
 /* Animation library hooks (JS picks up via data attributes) */
 
 .skduo-scroll-progress {
