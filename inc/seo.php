@@ -332,6 +332,39 @@ add_filter( 'language_attributes', function ( string $output ): string {
 } );
 
 // Match events use the same organization node as the club schema.
+// Match events without their own photo: default share image, then a raster logo.
+add_filter( 'skduo_schema_default_image', function ( string $image ): string {
+	if ( '' !== $image ) {
+		return $image;
+	}
+
+	foreach ( [ absint( get_option( 'skduo_default_og_image_id', 0 ) ), absint( get_theme_mod( 'custom_logo', 0 ) ) ] as $id ) {
+		if ( ! $id || 'image/svg+xml' === get_post_mime_type( $id ) ) {
+			continue;
+		}
+
+		$url = wp_get_attachment_image_url( $id, 'large' );
+		if ( $url ) {
+			return (string) $url;
+		}
+	}
+
+	// Last resort: bundled team photo, so events never ship without an image.
+	return function_exists( '\Roots\asset' ) ? (string) \Roots\asset( 'resources/images/hero/hero-1.jpg' ) : '';
+} );
+
+// Paid matches without their own ticket link point to the header "Piletid" target.
+add_filter( 'skduo_schema_ticket_url', function ( string $url ): string {
+	if ( function_exists( 'skduo_get_header_cta' ) ) {
+		$cta = skduo_get_header_cta();
+		if ( ! empty( $cta['url'] ) ) {
+			return (string) $cta['url'];
+		}
+	}
+
+	return $url;
+} );
+
 add_filter( 'skduo_schema_organizer', function ( array $organizer ): array {
 	return [
 		'@type' => 'SportsOrganization',
